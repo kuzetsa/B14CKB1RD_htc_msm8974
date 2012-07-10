@@ -25,6 +25,7 @@
 #include <asm/cputype.h>
 #include <asm/topology.h>
 
+<<<<<<< HEAD
 /*
  * cpu power scale management
  */
@@ -140,6 +141,44 @@ static void __init parse_dt_topology(void)
 		/* Save max capacity of the system */
 		if (capacity > max_capacity)
 			max_capacity = capacity;
+||||||| merged common ancestors
+#define MPIDR_SMP_BITMASK (0x3 << 30)
+#define MPIDR_SMP_VALUE (0x2 << 30)
+=======
+/*
+ * cpu power scale management
+ */
+
+/*
+ * cpu power table
+ * This per cpu data structure describes the relative capacity of each core.
+ * On a heteregenous system, cores don't have the same computation capacity
+ * and we reflect that difference in the cpu_power field so the scheduler can
+ * take this difference into account during load balance. A per cpu structure
+ * is preferred because each CPU updates its own cpu_power field during the
+ * load balance except for idle cores. One idle core is selected to run the
+ * rebalance_domains for all idle cores and the cpu_power can be updated
+ * during this sequence.
+ */
+static DEFINE_PER_CPU(unsigned long, cpu_scale);
+
+unsigned long arch_scale_freq_power(struct sched_domain *sd, int cpu)
+{
+	return per_cpu(cpu_scale, cpu);
+}
+
+static void set_power_scale(unsigned int cpu, unsigned long power)
+{
+	per_cpu(cpu_scale, cpu) = power;
+}
+
+/*
+ * cpu topology management
+ */
+
+#define MPIDR_SMP_BITMASK (0x3 << 30)
+#define MPIDR_SMP_VALUE (0x2 << 30)
+>>>>>>> ARM: 7461/1: topology: Add arch_scale_freq_power function
 
 		cpu_capacity[cpu].capacity = capacity;
 		cpu_capacity[cpu++].hwid = be32_to_cpup(reg);
@@ -189,6 +228,7 @@ void update_cpu_power(unsigned int cpu, unsigned long hwid)
 
 	set_power_scale(cpu, cpu_capacity[idx].capacity / middle_capacity);
 
+<<<<<<< HEAD
 	printk(KERN_INFO "CPU%u: update cpu_power %lu\n",
 		cpu, arch_scale_freq_power(NULL, cpu));
 }
@@ -201,6 +241,12 @@ static inline void update_cpu_power(unsigned int cpuid, unsigned int mpidr) {}
  /*
  * cpu topology table
  */
+||||||| merged common ancestors
+=======
+/*
+ * cpu topology table
+ */
+>>>>>>> ARM: 7461/1: topology: Add arch_scale_freq_power function
 struct cputopo_arm cpu_topology[NR_CPUS];
 EXPORT_SYMBOL_GPL(cpu_topology);
 
