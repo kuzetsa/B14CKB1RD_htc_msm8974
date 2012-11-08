@@ -195,7 +195,7 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
 	spin_unlock_irq(&dev->power.lock);
 
 	kfree(c->notifiers);
-	kfree(qos);
+	kfree(c);
 
  out:
 	mutex_unlock(&dev_pm_qos_mtx);
@@ -218,9 +218,6 @@ void dev_pm_qos_constraints_destroy(struct device *dev)
  * -EINVAL in case of wrong parameters, -ENOMEM if there's not enough memory
  * to allocate for data structures, -ENODEV if the device has just been removed
  * from the system.
- *
- * Callers should ensure that the target device is not RPM_SUSPENDED before
- * using this function for requests of type DEV_PM_QOS_FLAGS.
  */
 int dev_pm_qos_add_request(struct device *dev, struct dev_pm_qos_request *req,
 			   s32 value)
@@ -278,9 +275,6 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_add_request);
  * 0 if the aggregated constraint value has not changed,
  * -EINVAL in case of wrong parameters, -ENODEV if the device has been
  * removed from the system
- *
- * Callers should ensure that the target device is not RPM_SUSPENDED before
- * using this function for requests of type DEV_PM_QOS_FLAGS.
  */
 int dev_pm_qos_update_request(struct dev_pm_qos_request *req,
 			      s32 new_value)
@@ -321,9 +315,6 @@ EXPORT_SYMBOL_GPL(dev_pm_qos_update_request);
  * 0 if the aggregated constraint value has not changed,
  * -EINVAL in case of wrong parameters, -ENODEV if the device has been
  * removed from the system
- *
- * Callers should ensure that the target device is not RPM_SUSPENDED before
- * using this function for requests of type DEV_PM_QOS_FLAGS.
  */
 int dev_pm_qos_remove_request(struct dev_pm_qos_request *req)
 {
