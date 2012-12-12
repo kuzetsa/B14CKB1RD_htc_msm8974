@@ -26,10 +26,6 @@
 #include <mach/debug_display.h>
 #include <linux/msm_mdp.h>
 
-#ifdef CONFIG_POWERSUSPEND
-#include <linux/powersuspend.h>
-#endif
-
 #define DT_CMD_HDR 6
 #define WLED_MAX_LEVEL	4095
 
@@ -156,7 +152,7 @@ static unsigned char shrink_pwm(int val, int pwm_min, int pwm_default, int pwm_m
         } else if (val > BRI_SETTING_MAX)
                 shrink_br = pwm_max;
 
-        // PR_DISP_INFO("brightness orig=%d, transformed=%d\n", val, shrink_br);
+        PR_DISP_INFO("brightness orig=%d, transformed=%d\n", val, shrink_br);
 
         return shrink_br;
 }
@@ -495,18 +491,6 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 		return -EINVAL;
 	}
 
-<<<<<<< HEAD
-#ifdef CONFIG_POWERSUSPEND
-	set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE);
-#endif
-
-||||||| merged common ancestors
-=======
-#ifdef CONFIG_POWERSUSPEND
-	set_power_suspend_state_pannel_hook(POWER_SUSPEND_INACTIVE);
-#endif
-
->>>>>>> Squashed Faux powersuspend driver
 	ctrl = container_of(pdata, struct mdss_dsi_ctrl_pdata,
 				panel_data);
 	mipi  = &pdata->panel_info.mipi;
@@ -557,18 +541,6 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 	else if (ctrl->pwm_ctl_type == PWM_EXT)
 		led_trigger_event(bl_led_i2c_trigger, 0); 
 
-<<<<<<< HEAD
-#ifdef CONFIG_POWERSUSPEND
-	set_power_suspend_state_panel_hook(POWER_SUSPEND_ACTIVE);
-#endif
-
-||||||| merged common ancestors
-=======
-#ifdef CONFIG_POWERSUSPEND
-	set_power_suspend_state_pannel_hook(POWER_SUSPEND_ACTIVE);
-#endif
-
->>>>>>> Squashed Faux powersuspend driver
 	PR_DISP_INFO("%s:-\n", __func__);
 	return 0;
 }
