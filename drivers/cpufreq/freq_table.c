@@ -80,9 +80,16 @@ int cpufreq_frequency_table_verify(struct cpufreq_policy *policy,
 	if (!found) {
 		policy->max = next_larger;
 
+<<<<<<< HEAD
 		cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
 			policy->cpuinfo.max_freq);
 	}
+||||||| merged common ancestors
+	cpufreq_verify_within_limits(policy, policy->cpuinfo.min_freq,
+				     policy->cpuinfo.max_freq);
+=======
+	cpufreq_verify_within_cpu_limits(policy);
+>>>>>>> cpufreq: add new routine cpufreq_verify_within_cpu_limits()
 
 	pr_debug("verification lead to (%u - %u kHz) for cpu %u\n",
 				policy->min, policy->max, policy->cpu);
