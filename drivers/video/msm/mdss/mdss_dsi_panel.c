@@ -495,10 +495,18 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 		return -EINVAL;
 	}
 
+<<<<<<< HEAD
 #ifdef CONFIG_POWERSUSPEND
 	set_power_suspend_state_panel_hook(POWER_SUSPEND_INACTIVE);
 #endif
 
+||||||| merged common ancestors
+=======
+#ifdef CONFIG_POWERSUSPEND
+	set_power_suspend_state_pannel_hook(POWER_SUSPEND_INACTIVE);
+#endif
+
+>>>>>>> Squashed Faux powersuspend driver
 	ctrl = container_of(pdata, struct mdss_dsi_ctrl_pdata,
 				panel_data);
 	mipi  = &pdata->panel_info.mipi;
@@ -549,10 +557,18 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 	else if (ctrl->pwm_ctl_type == PWM_EXT)
 		led_trigger_event(bl_led_i2c_trigger, 0); 
 
+<<<<<<< HEAD
 #ifdef CONFIG_POWERSUSPEND
 	set_power_suspend_state_panel_hook(POWER_SUSPEND_ACTIVE);
 #endif
 
+||||||| merged common ancestors
+=======
+#ifdef CONFIG_POWERSUSPEND
+	set_power_suspend_state_pannel_hook(POWER_SUSPEND_ACTIVE);
+#endif
+
+>>>>>>> Squashed Faux powersuspend driver
 	PR_DISP_INFO("%s:-\n", __func__);
 	return 0;
 }
