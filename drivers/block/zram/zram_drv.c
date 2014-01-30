@@ -626,6 +626,8 @@ static void zram_reset_device(struct zram *zram, bool reset_capacity)
 		return;
 	}
 
+	flush_work(&zram->free_work);
+
 	meta = zram->meta;
 	/* Free all pages that are still in this zram device */
 	for (index = 0; index < zram->disksize >> PAGE_SHIFT; index++) {
