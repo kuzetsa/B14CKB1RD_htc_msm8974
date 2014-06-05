@@ -420,8 +420,21 @@ int kgsl_pwrscale_init(struct device *dev, const char *governor)
 	for (i = 0; i < (pwr->num_pwrlevels - 1); i++)
 		pwrscale->freq_table[out++] = pwr->pwrlevels[i].gpu_freq;
 
+<<<<<<< HEAD
 	profile->max_state = out;
 	/* link storage array to the devfreq profile pointer */
+||||||| merged common ancestors
+	profile->max_state = out - 1;
+	
+=======
+	/*
+	 * Max_state is the number of valid power levels.
+	 * The valid power levels range from 0 - (max_state - 1)
+	 */
+	profile->max_state = pwr->num_pwrlevels - 1;
+	/* link storage array to the devfreq profile pointer */
+
+>>>>>>> msm: kgsl: set the correct max_state
 	profile->freq_table = pwrscale->freq_table;
 
 	/* if there is only 1 freq, no point in running a governor */
