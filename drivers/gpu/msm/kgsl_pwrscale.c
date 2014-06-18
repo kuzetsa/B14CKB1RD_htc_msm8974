@@ -171,8 +171,7 @@ int kgsl_devfreq_target(struct device *dev, unsigned long *freq, u32 flags)
 	}
 
 	if ((pwr->constraint.type != KGSL_CONSTRAINT_NONE) &&
-		(!time_after(jiffies, pwr->constraint.expires)) &&
-		(level >= pwr->constraint.hint.pwrlevel.level))
+		(!time_after(jiffies, pwr->constraint.expires)))
 			*freq = cur_freq;
 	else {
 		
