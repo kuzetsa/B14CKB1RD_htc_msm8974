@@ -121,6 +121,7 @@ extern unsigned long avenrun[];		/* Load averages */
 extern void get_avenrun(unsigned long *loads, unsigned long offset, int shift);
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 #define FSHIFT 11 			/* bits of precision */
 #define LOAD_FREQ	(4*HZ+122)	/* 4.61 sec intervals */
 #define FIXED_1		(1UL<<FSHIFT)	/* 1.0 as fixed-point */
@@ -142,6 +143,21 @@ extern void get_avenrun(unsigned long *loads, unsigned long offset, int shift);
 #define EXP_5		2014		/* 1/exp(5sec/5min) */
 #define EXP_15		2037		/* 1/exp(5sec/15min) */
 >>>>>>> kernel: sched: LOAD_FREQ (4*HZ+61) avoids loadavg Moire [AndreiLux]
+||||||| merged common ancestors
+#define FSHIFT		11		/* nr of bits of precision */
+#define FIXED_1		(1<<FSHIFT)	/* 1.0 as fixed-point */
+#define LOAD_FREQ	(4*HZ+61)	/* 4.61 sec intervals */
+#define EXP_1		1884		/* 1/exp(5sec/1min) as fixed-point */
+#define EXP_5		2014		/* 1/exp(5sec/5min) */
+#define EXP_15		2037		/* 1/exp(5sec/15min) */
+=======
+#define FSHIFT 11 			/* bits of precision */
+#define LOAD_FREQ	(4*HZ+122)	/* 4.61 sec intervals */
+#define FIXED_1		(1UL<<FSHIFT)	/* 1.0 as fixed-point */
+#define EXP_1           1896		/* 1/exp(4.61sec/1min) as fixed-point */
+#define EXP_5		2017		/* 1/exp(4.61sec/5min) */
+#define EXP_15		2038		/* 1/exp(4.61sec/15min) */
+>>>>>>> sched: LOAD_FREQ (4*HZ+122) avoids loadavg Moire [halaszk]
 
 #define CALC_LOAD(load,exp,n) \
 	load *= exp; \
