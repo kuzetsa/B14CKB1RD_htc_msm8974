@@ -32,7 +32,6 @@
 #include <linux/completion.h>
 #include <linux/mutex.h>
 #include <linux/syscore_ops.h>
-#include <linux/pm_qos.h>
 
 #include <trace/events/power.h>
 
@@ -1598,28 +1597,16 @@ EXPORT_SYMBOL(cpufreq_get_policy);
 static int __cpufreq_set_policy(struct cpufreq_policy *data,
 				struct cpufreq_policy *policy)
 {
-	int ret = 0, failed = 1;
-	unsigned int qmin, qmax;
-	unsigned int pmin = policy->min;
-	unsigned int pmax = policy->max;
+	int ret = 0;
 
-	qmin = min((unsigned int)pm_qos_request(PM_QOS_CPU_FREQ_MIN),
-		   data->user_policy.max);
-	qmax = max((unsigned int)pm_qos_request(PM_QOS_CPU_FREQ_MAX),
-		   data->user_policy.min);
-
-	pr_debug("setting new policy for CPU %u: %u - %u (%u - %u) kHz\n",
-		policy->cpu, pmin, pmax, qmin, qmax);
-
-	/* clamp the new policy to PM QoS limits */
-	policy->min = max(pmin, qmin);
-	policy->max = min(pmax, qmax);
+	pr_debug("setting new policy for CPU %u: %u - %u kHz\n", policy->cpu,
+		policy->min, policy->max);
 
 	memcpy(&policy->cpuinfo, &data->cpuinfo,
 				sizeof(struct cpufreq_cpuinfo));
 
-	if (policy->min > data->user_policy.max ||
-	    policy->max < data->user_policy.min) {
+	if (policy->min > data->user_policy.max
+		|| policy->max < data->user_policy.min) {
 		ret = -EINVAL;
 		goto error_out;
 	}
@@ -1687,9 +1674,6 @@ static int __cpufreq_set_policy(struct cpufreq_policy *data,
 	}
 
 error_out:
-	/* restore the limits that the policy requested */
-	policy->min = pmin;
-	policy->max = pmax;
 	return ret;
 }
 
@@ -1758,27 +1742,13 @@ int cpufreq_set_gov(char *target_gov, unsigned int cpu)
 	if (!cur_policy)
 		return -EINVAL;
 
-	if (lock_policy_rwsem_read(cur_policy->cpu) < 0) {
-		ret = -EINVAL;
-		goto err_out;
-	}
-
-	if (cur_policy->governor)
-		ret = strncmp(cur_policy->governor->name, target_gov,
-					strlen(target_gov));
-	else {
-		unlock_policy_rwsem_read(cur_policy->cpu);
-		ret = -EINVAL;
-		goto err_out;
-	}
-	unlock_policy_rwsem_read(cur_policy->cpu);
-
-	if (!ret) {
-		pr_debug(" Target governer & current governer is same\n");
+	new_policy = *cur_policy;
+	if (!strncmp(cur_policy->governor->name, target_gov,
+			strlen(target_gov))) {
+		/* Target governer & current governer is same */
 		ret = -EINVAL;
 		goto err_out;
 	} else {
-		new_policy = *cur_policy;
 		if (cpufreq_parse_governor(target_gov, &new_policy.policy,
 				&new_policy.governor)) {
 			ret = -EINVAL;
@@ -1925,36 +1895,9 @@ int cpufreq_unregister_driver(struct cpufreq_driver *driver)
 }
 EXPORT_SYMBOL_GPL(cpufreq_unregister_driver);
 
-static int cpu_freq_notify(struct notifier_block *b,
-			   unsigned long l, void *v);
-
-static struct notifier_block min_freq_notifier = {
-	.notifier_call = cpu_freq_notify,
-};
-static struct notifier_block max_freq_notifier = {
-	.notifier_call = cpu_freq_notify,
-};
-
-static int cpu_freq_notify(struct notifier_block *b,
-			   unsigned long l, void *v)
-{
-	int cpu;
-	pr_debug("PM QoS %s %lu\n",
-		b == &min_freq_notifier ? "min" : "max", l);
-	for_each_online_cpu(cpu) {
-		struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
-		if (policy) {
-			cpufreq_update_policy(policy->cpu);
-			cpufreq_cpu_put(policy);
-		}
-	}
-	return NOTIFY_OK;
-}
-
 static int __init cpufreq_core_init(void)
 {
 	int cpu;
-	int rc;
 
 	if (cpufreq_disabled())
 		return -ENODEV;
@@ -1973,12 +1916,6 @@ static int __init cpufreq_core_init(void)
 	cpufreq_global_kobject->kset = cpufreq_kset;
 
 	register_syscore_ops(&cpufreq_syscore_ops);
-	rc = pm_qos_add_notifier(PM_QOS_CPU_FREQ_MIN,
-				 &min_freq_notifier);
-	BUG_ON(rc);
-	rc = pm_qos_add_notifier(PM_QOS_CPU_FREQ_MAX,
-				 &max_freq_notifier);
-	BUG_ON(rc);
 
 	return 0;
 }
