@@ -1713,3 +1713,4 @@ void fuse_init_symlink(struct inode *inode)
 {
 	inode->i_op = &fuse_symlink_inode_operations;
 }
+
