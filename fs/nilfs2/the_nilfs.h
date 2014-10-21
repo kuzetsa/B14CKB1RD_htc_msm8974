@@ -99,7 +99,6 @@ struct the_nilfs {
 
 	struct block_device    *ns_bdev;
 	struct rw_semaphore	ns_sem;
-	struct mutex		ns_snapshot_mount_mutex;
 
 	/*
 	 * used for
