@@ -1,6 +1,3 @@
-/*
- * Definitions for rt5501 Headphone amp chip.
- */
 #ifndef RT5501_H
 #define RT5501_H
 
@@ -43,7 +40,7 @@ struct rt5501_comm_data {
 
 struct rt5501_config_data {
 	unsigned int mode_num;
-	struct rt5501_comm_data *cmd_data;  /* [mode][mode_kind][reserve][cmds..] */
+	struct rt5501_comm_data *cmd_data;  
 };
 
 enum {

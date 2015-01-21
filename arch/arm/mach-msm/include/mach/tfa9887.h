@@ -1,6 +1,3 @@
-/*
- * Definitions for tfa9887 speaker amp chip.
- */
 #ifndef TFA9887_H
 #define TFA9887_H
 
