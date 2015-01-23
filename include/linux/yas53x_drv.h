@@ -23,9 +23,6 @@
 
 #include "yas53x.h"
 
-/* ----------------------------------------------------------------------------
- *                              Macro definition
- *--------------------------------------------------------------------------- */
 
 #define YAS_VCORE (26)
 
@@ -39,9 +36,6 @@
 #define YAS_OVERFLOW	(YAS_X_OVERFLOW|YAS_Y1_OVERFLOW|YAS_Y2_OVERFLOW)
 #define YAS_UNDERFLOW	(YAS_X_UNDERFLOW|YAS_Y1_UNDERFLOW|YAS_Y2_UNDERFLOW)
 
-/* ----------------------------------------------------------------------------
- *                            Structure definition
- *--------------------------------------------------------------------------- */
 
 struct yas_mag_data {
 	struct yas_vector xyz;
@@ -80,10 +74,7 @@ struct yas_mag_driver {
 	struct yas_mag_driver_callback callback;
 };
 
-/* ----------------------------------------------------------------------------
- *                         Global function definition
- *--------------------------------------------------------------------------- */
 
 int yas_mag_driver_init(struct yas_mag_driver *f);
 
-#endif /* __YAS53X_DRV_H__ */
+#endif 

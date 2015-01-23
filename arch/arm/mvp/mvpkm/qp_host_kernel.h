@@ -18,11 +18,6 @@
  */
 #line 5
 
-/**
- * @file
- *
- * @brief QP host function prototypes
- */
 
 
 #ifndef _QP_HOST_KERNEL_H

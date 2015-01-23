@@ -21,9 +21,6 @@
 #ifndef __YAS53X_H__
 #define __YAS53X_H__
 
-/* ----------------------------------------------------------------------------
- *                              Macro definition
- *--------------------------------------------------------------------------- */
 
 #define YAS_VERSION	"1.0.3"
 
@@ -63,19 +60,13 @@
 
 #define NELEMS(a) ((int)(sizeof(a)/sizeof(a[0])))
 
-/* ----------------------------------------------------------------------------
- *                              Configuration
- *--------------------------------------------------------------------------- */
 
 #define YAS_DEFAULT_FILTER_LEN (20)
-#define YAS_DEFAULT_FILTER_THRESH (300) /* 300 nT */
-#define YAS_DEFAULT_FILTER_NOISE (12*12) /* standard deviation 1200 nT */
+#define YAS_DEFAULT_FILTER_THRESH (300) 
+#define YAS_DEFAULT_FILTER_NOISE (12*12) 
 
 #define YAS_VCORE (26)
 
-/* ----------------------------------------------------------------------------
- *                            Structure definition
- *--------------------------------------------------------------------------- */
 
 struct yas_vector {
 	int32_t v[3];
@@ -200,9 +191,6 @@ struct yas53x_platform_data {
     int chip_layout;
 };
 
-/* ----------------------------------------------------------------------------
- *                         Global function definition
- *--------------------------------------------------------------------------- */
 
 int yas_acc_driver_init(struct yas_acc_driver *f);
 int yas_mag_driver_init(struct yas_mag_driver *f);
@@ -210,4 +198,4 @@ int yas_mag_filter_init(struct yas_mag_filter *f);
 int yas_mag_calibration_init(struct yas_mag_calibration *f);
 int yas_util_init(struct yas_util *f);
 
-#endif /* __YAS53X_H__ */
+#endif 

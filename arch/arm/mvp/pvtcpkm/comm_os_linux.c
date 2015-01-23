@@ -18,22 +18,15 @@
  */
 #line 5
 
-/**
- *  @file
- *
- *  @brief Linux-specific functions/types.
- */
 
 #include "comm_os.h"
 
 #define DISPATCH_MAX_CYCLES 8192
 
-/* Type definitions  */
 
 typedef struct workqueue_struct CommOSWorkQueue;
 
 
-/* Static data */
 
 static int running;
 static CommOSWorkQueue *dispatchWQ;
@@ -45,11 +38,6 @@ static unsigned int dispatchMaxCycles = 2048;
 static CommOSWorkQueue *aioWQ;
 
 
-/**
- *  @brief Initializes a workqueue consisting of per-cpu kernel threads.
- *  @param name workqueue name
- *  @return workqueue handle if successful, NULL otherwise
- */
 
 static inline CommOSWorkQueue *
 CreateWorkqueue(const char *name)
@@ -58,11 +46,6 @@ CreateWorkqueue(const char *name)
 }
 
 
-/**
- *  @brief Destroys a workqueue and stops its threads.
- *  @param[in,out] wq workqueue to destroy.
- *  @return workqueue handle is successful, NULL otherwise.
- */
 
 static inline void
 DestroyWorkqueue(CommOSWorkQueue *wq)
@@ -71,10 +54,6 @@ DestroyWorkqueue(CommOSWorkQueue *wq)
 }
 
 
-/**
- *  @brief Force execution of a work item.
- *  @param[in,out] work work item to dequeue.
- */
 
 static inline void
 FlushDelayedWork(CommOSWork *work)
@@ -83,16 +62,6 @@ FlushDelayedWork(CommOSWork *work)
 }
 
 
-/**
- *  @brief Enqueue a work item to a workqueue for execution on a given cpu
- *      and after the specified interval.
- *  @param cpu cpu number.
- *  @param[in,out] wq target work queue.
- *  @param[in,out] work work item to enqueue.
- *  @param jif delay interval.
- *  @return zero if successful, non-zero otherwise.
- *  @note Linux requires that "the caller must ensure it can't go away."
- */
 
 static inline int
 QueueDelayedWorkOn(int cpu,
@@ -104,15 +73,6 @@ QueueDelayedWorkOn(int cpu,
 }
 
 
-/**
- *  @brief Enqueues a work item to a workqueue for execution on the current cpu
- *      and after the specified interval.
- *  @param[in,out] wq target work queue.
- *  @param[in,out] work work item to enqueue.
- *  @param jif delay interval.
- *  @return zero if successful, non-zero otherwise.
- *  @note Linux says that "if the CPU dies it can be processed by another CPU."
- */
 
 static inline int
 QueueDelayedWork(CommOSWorkQueue *wq,
@@ -123,11 +83,6 @@ QueueDelayedWork(CommOSWorkQueue *wq,
 }
 
 
-/**
- *  @brief Cancels a queued delayed work item and synchronizes with its
- *      completion.
- *  @param[in,out] work work item to cancel
- */
 
 static inline void
 WaitForDelayedWork(CommOSWork *work)
@@ -136,10 +91,6 @@ WaitForDelayedWork(CommOSWork *work)
 }
 
 
-/**
- *  @brief Discards work items queued to the specified workqueue.
- *  @param[in,out] wq work queue to flush.
- */
 
 static inline void
 FlushWorkqueue(CommOSWorkQueue *wq)
@@ -148,9 +99,6 @@ FlushWorkqueue(CommOSWorkQueue *wq)
 }
 
 
-/**
- *  @brief Schedules dispatcher threads for immediate execution.
- */
 
 void
 CommOS_ScheduleDisp(void)
@@ -162,11 +110,6 @@ CommOS_ScheduleDisp(void)
 }
 
 
-/**
- *  @brief Default delayed work callback function implementation.
- *      Calls the input function specified at initialization.
- *  @param[in,out] work work item.
- */
 
 static void
 DispatchWrapper(CommOSWork *work)
@@ -174,10 +117,10 @@ DispatchWrapper(CommOSWork *work)
 	unsigned int misses;
 
 	for (misses = 0; running && (misses < dispatchMaxCycles); ) {
-		/* We run for at most dispatchMaxCycles of channel no-ops. */
+		
 
 		if (!dispatch()) {
-			/* No useful work was done, on any of the channels. */
+			
 
 			misses++;
 			if ((misses % 32) == 0)
@@ -190,10 +133,6 @@ DispatchWrapper(CommOSWork *work)
 	if (running &&
 	    (work >= &dispatchWorks[0]) &&
 	    (work <= &dispatchWorks[NR_CPUS - 1])) {
-		/*
-		 * If still running _and_ this was a regular, time-based run,
-		 * then re-arm the timer.
-		 */
 
 		QueueDelayedWork(dispatchWQ, work, dispatchInterval);
 	}
@@ -201,13 +140,6 @@ DispatchWrapper(CommOSWork *work)
 
 #ifdef CONFIG_HOTPLUG_CPU
 
-/**
- * @brief CPU hotplug notification handling
- * @param nfb Notification block
- * @param action Hotplug action
- * @param hcpu CPU number
- * @return NOTIFY_OK
- */
 
 static int __cpuinit
 CpuCallback(struct notifier_block *nfb,
@@ -243,9 +175,6 @@ CpuCallback(struct notifier_block *nfb,
 	return NOTIFY_OK;
 }
 
-/**
- * @brief Hotplug notification block
- */
 
 static struct notifier_block __refdata CpuNotifier = {
 	.notifier_call = CpuCallback,
@@ -254,11 +183,6 @@ static struct notifier_block __refdata CpuNotifier = {
 #endif
 
 
-/**
- *  @brief Initializes work item with specified callback function.
- *  @param[in,out] work work queue to initialize.
- *  @param func work item to initialize the queue with.
- */
 
 void
 CommOS_InitWork(CommOSWork *work,
@@ -268,10 +192,6 @@ CommOS_InitWork(CommOSWork *work,
 }
 
 
-/**
- *  @brief Flush execution of a work item
- *  @param{in,out] work work item to dequeue
- */
 void
 CommOS_FlushAIOWork(CommOSWork *work)
 {
@@ -280,11 +200,6 @@ CommOS_FlushAIOWork(CommOSWork *work)
 }
 
 
-/**
- *  @brief Queue a work item to the AIO workqueue.
- *  @param[in,out] work work item to enqueue.
- *  @return zero if work enqueued, non-zero otherwise.
- */
 
 int
 CommOS_ScheduleAIOWork(CommOSWork *work)
@@ -296,25 +211,13 @@ CommOS_ScheduleAIOWork(CommOSWork *work)
 }
 
 
-/**
- *  @brief Initializes the base IO system.
- *  @param dispatchTaskName dispatch thread(s) name.
- *  @param dispatchFunc dispatch function.
- *  @param intervalMillis periodic interval in milliseconds to call dispatch.
- *         The floor is 1 jiffy, regardless of how small intervalMillis is
- *  @param maxCycles number of cycles to do adaptive polling before scheduling.
- *         The maximum number of cycles is DISPATCH_MAX_CYCLES.
- *  @param aioTaskName AIO thread(s) name. If NULL, AIO threads aren't started.
- *  @return zero is successful, -1 otherwise.
- *  @sideeffects Dispatch threads, and if applicable, AIO threads are started.
- */
 
 int
-CommOS_StartIO(const char *dispatchTaskName,    /* IN */
-	       CommOSDispatchFunc dispatchFunc, /* IN */
-	       unsigned int intervalMillis,     /* IN */
-	       unsigned int maxCycles,          /* IN */
-	       const char *aioTaskName)         /* IN */
+CommOS_StartIO(const char *dispatchTaskName,    
+	       CommOSDispatchFunc dispatchFunc, 
+	       unsigned int intervalMillis,     
+	       unsigned int maxCycles,          
+	       const char *aioTaskName)         
 {
 	int cpu;
 
@@ -323,12 +226,6 @@ CommOS_StartIO(const char *dispatchTaskName,    /* IN */
 		return 0;
 	}
 
-	/*
-	 * OK, let's test the handler against NULL. Though, the whole concept
-	 * of checking for NULL pointers, outside cases where NULL is meaningful
-	 * to the implementation, is relatively useless: garbage, random
-	 * pointers rarely happen to be all-zeros.
-	 */
 
 	if (!dispatchFunc) {
 		CommOS_Log(("%s: a NULL Dispatch handler was passed.\n",
@@ -393,10 +290,6 @@ CommOS_StartIO(const char *dispatchTaskName,    /* IN */
 }
 
 
-/**
- *  @brief Stops the base IO system.
- *  @sideeffects Dispatch threads, and if applicable, AIO threads are stopped.
- */
 
 void
 CommOS_StopIO(void)
