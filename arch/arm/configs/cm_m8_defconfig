@@ -1274,7 +1274,6 @@ CONFIG_OF=y
 #
 # Device Tree and Open Firmware support
 #
-# CONFIG_PROC_DEVICETREE is not set
 # CONFIG_OF_SELFTEST is not set
 CONFIG_OF_FLATTREE=y
 CONFIG_OF_EARLY_FLATTREE=y
