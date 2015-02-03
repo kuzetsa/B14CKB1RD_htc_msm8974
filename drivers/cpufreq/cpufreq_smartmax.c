@@ -958,6 +958,7 @@ define_global_rw_attr(boost_freq);
 define_global_rw_attr(boost_duration);
 define_global_rw_attr(io_is_busy);
 define_global_rw_attr(ignore_nice);
+define_global_rw_attr(registering_early_suspend);
 define_global_rw_attr(ramp_up_during_boost);
 define_global_rw_attr(awake_ideal_freq);
 define_global_rw_attr(suspend_ideal_freq);
@@ -978,7 +979,8 @@ static struct attribute * smartmax_attributes[] = {
 	&boost_duration_attr.attr, 
 	&io_is_busy_attr.attr,
 	&ignore_nice_attr.attr, 
-	&ramp_up_during_boost_attr.attr, 
+	&registering_early_suspend_boost_attr.attr,
+	&ramp_up_during_boost_attr.attr,
 	&awake_ideal_freq_attr.attr,
 	&suspend_ideal_freq_attr.attr,		
 	&min_sampling_rate_attr.attr,
