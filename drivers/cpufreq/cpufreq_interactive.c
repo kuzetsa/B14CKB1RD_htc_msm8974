@@ -32,9 +32,6 @@
 #include <linux/kernel_stat.h>
 #include <asm/cputime.h>
 
-#define CREATE_TRACE_POINTS
-#include <trace/events/cpufreq_interactive.h>
-
 static int active_count;
 
 struct cpufreq_interactive_cpuinfo {
@@ -119,6 +116,11 @@ static u64 boostpulse_endtime;
 #define DEFAULT_TIMER_SLACK (4 * DEFAULT_TIMER_RATE)
 static int timer_slack_val = DEFAULT_TIMER_SLACK;
 
+<<<<<<< HEAD
+||||||| merged common ancestors
+static bool io_is_busy;
+
+=======
 /*
  * Whether to align timer windows across all CPUs. When
  * use_sched_load is true, this flag is ignored and windows
@@ -126,21 +128,124 @@ static int timer_slack_val = DEFAULT_TIMER_SLACK;
  */
 static bool align_windows = true;
 
+>>>>>>> turn bacon into interactive
+/*
+<<<<<<< HEAD
+ * Whether to align timer windows across all CPUs. When
+ * use_sched_load is true, this flag is ignored and windows
+ * will always be aligned.
+||||||| merged common ancestors
+ * If the max load among other CPUs is higher than up_threshold_any_cpu_load
+ * and if the highest frequency among the other CPUs is higher than
+ * up_threshold_any_cpu_freq then do not let the frequency to drop below
+ * sync_freq
+=======
+ * Stay at max freq for at least max_freq_hysteresis before dropping
+ * frequency.
+>>>>>>> turn bacon into interactive
+ */
+<<<<<<< HEAD
+static bool align_windows = true;
+||||||| merged common ancestors
+static unsigned int up_threshold_any_cpu_load;
+static unsigned int sync_freq;
+static unsigned int up_threshold_any_cpu_freq;
+=======
+static unsigned int max_freq_hysteresis;
+>>>>>>> turn bacon into interactive
+
+<<<<<<< HEAD
 /* Improves frequency selection for more energy */
 static bool powersave_bias;
+||||||| merged common ancestors
+static int cpufreq_governor_interactive(struct cpufreq_policy *policy,
+		unsigned int event);
+=======
+static bool io_is_busy;
+>>>>>>> turn bacon into interactive
 
+<<<<<<< HEAD
 /*
  * Stay at max freq for at least max_freq_hysteresis before dropping
  * frequency.
  */
 static unsigned int max_freq_hysteresis;
+||||||| merged common ancestors
+#ifndef CONFIG_CPU_FREQ_DEFAULT_GOV_INTERACTIVE
+static
+#endif
+struct cpufreq_governor cpufreq_gov_interactive = {
+	.name = "interactive",
+	.governor = cpufreq_governor_interactive,
+	.max_transition_latency = 10000000,
+	.owner = THIS_MODULE,
+};
+
+static inline cputime64_t get_cpu_idle_time_jiffy(unsigned int cpu,
+						  cputime64_t *wall)
+{
+	u64 idle_time;
+	u64 cur_wall_time;
+	u64 busy_time;
+
+	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
+
+	busy_time  = kcpustat_cpu(cpu).cpustat[CPUTIME_USER];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_IRQ];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_NICE];
+=======
+#define DOWN_LOW_LOAD_THRESHOLD 5
+
+/* Round to starting jiffy of next evaluation window */
+static u64 round_to_nw_start(u64 jif)
+{
+	unsigned long step = usecs_to_jiffies(timer_rate);
+	u64 ret;
+
+	if (align_windows) {
+		do_div(jif, step);
+		ret = (jif + 1) * step;
+	} else {
+		ret = jiffies + usecs_to_jiffies(timer_rate);
+	}
+
+	return ret;
+}
+
+static inline u64 get_cpu_idle_time_jiffy(unsigned int cpu,
+						  u64 *wall)
+{
+	u64 idle_time;
+	u64 cur_wall_time;
+	u64 busy_time;
+
+	cur_wall_time = jiffies64_to_cputime64(get_jiffies_64());
+
+	busy_time  = kcpustat_cpu(cpu).cpustat[CPUTIME_USER];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SYSTEM];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_IRQ];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_SOFTIRQ];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_STEAL];
+	busy_time += kcpustat_cpu(cpu).cpustat[CPUTIME_NICE];
+>>>>>>> turn bacon into interactive
 
 static bool io_is_busy;
 
 #define DOWN_LOW_LOAD_THRESHOLD 5
 
+<<<<<<< HEAD
 /* Round to starting jiffy of next evaluation window */
 static u64 round_to_nw_start(u64 jif)
+||||||| merged common ancestors
+static inline cputime64_t get_cpu_idle_time(unsigned int cpu,
+					    cputime64_t *wall)
+=======
+static inline u64 get_cpu_idle_time(unsigned int cpu,
+					    u64 *wall)
+>>>>>>> turn bacon into interactive
 {
 	unsigned long step = usecs_to_jiffies(timer_rate);
 	u64 ret;
@@ -165,7 +270,13 @@ static void cpufreq_interactive_timer_resched(unsigned long cpu)
 	spin_lock_irqsave(&pcpu->load_lock, flags);
 	pcpu->time_in_idle =
 		get_cpu_idle_time(smp_processor_id(),
+<<<<<<< HEAD
 				  &pcpu->time_in_idle_timestamp, io_is_busy);
+||||||| merged common ancestors
+				     &pcpu->time_in_idle_timestamp);
+=======
+				  &pcpu->time_in_idle_timestamp);
+>>>>>>> turn bacon into interactive
 	pcpu->cputime_speedadj = 0;
 	pcpu->cputime_speedadj_timestamp = pcpu->time_in_idle_timestamp;
 	expires = round_to_nw_start(pcpu->last_evaluated_jiffy);
@@ -387,9 +498,16 @@ static void cpufreq_interactive_timer(unsigned long data)
 	if (!pcpu->governor_enabled)
 		goto exit;
 
+<<<<<<< HEAD
 	if (cpu_is_offline(data))
 		goto exit;
 
+||||||| merged common ancestors
+=======
+	if (cpu_is_offline(data))
+		goto exit;
+	
+>>>>>>> turn bacon into interactive
 	spin_lock_irqsave(&pcpu->load_lock, flags);
 	now = update_load(data);
 	delta_time = (unsigned int)(now - pcpu->cputime_speedadj_timestamp);
@@ -425,15 +543,33 @@ static void cpufreq_interactive_timer(unsigned long data)
 	if (pcpu->policy->cur >= this_hispeed_freq &&
 	    new_freq > pcpu->policy->cur &&
 	    now - pcpu->hispeed_validate_time <
+<<<<<<< HEAD
 	    freq_to_above_hispeed_delay(pcpu->policy->cur)) {
 	    	trace_cpufreq_interactive_notyet(
 			data, cpu_load, pcpu->target_freq,
 			pcpu->policy->cur, new_freq);
 		spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
+||||||| merged common ancestors
+	    freq_to_above_hispeed_delay(pcpu->target_freq)) {
+		trace_cpufreq_interactive_notyet(
+			data, cpu_load, pcpu->target_freq,
+			pcpu->policy->cur, new_freq);
+=======
+	    freq_to_above_hispeed_delay(pcpu->policy->cur)) {
+		spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
+>>>>>>> turn bacon into interactive
 		goto rearm;
 	}
+<<<<<<< HEAD
 
 	pcpu->local_hvtime = now;
+||||||| merged common ancestors
+
+	pcpu->hispeed_validate_time = now;
+=======
+	
+	pcpu->local_hvtime = now;
+>>>>>>> turn bacon into interactive
 
 	if (cpufreq_frequency_table_target(pcpu->policy, pcpu->freq_table,
 					   new_freq, CPUFREQ_RELATION_C,
@@ -443,6 +579,13 @@ static void cpufreq_interactive_timer(unsigned long data)
 	}
 
 	new_freq = pcpu->freq_table[index].frequency;
+	
+	if (pcpu->target_freq >= pcpu->policy->max
+	    && new_freq < pcpu->target_freq
+	    && now - pcpu->max_freq_idle_start_time < max_freq_hysteresis) {
+		spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
+		goto rearm;
+	}
 
 	if (pcpu->target_freq >= pcpu->policy->max
 	    && new_freq < pcpu->target_freq
@@ -458,11 +601,21 @@ static void cpufreq_interactive_timer(unsigned long data)
 	 * floor frequency for the minimum sample time since last validated.
 	 */
 	if (new_freq < pcpu->floor_freq) {
+<<<<<<< HEAD
 		if (now - pcpu->floor_validate_time < min_sample_time) {
 			trace_cpufreq_interactive_notyet(
 				data, cpu_load, pcpu->target_freq,
 				pcpu->policy->cur, new_freq);
 			spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
+||||||| merged common ancestors
+		if (now - pcpu->floor_validate_time < mod_min_sample_time) {
+			trace_cpufreq_interactive_notyet(
+				data, cpu_load, pcpu->target_freq,
+				pcpu->policy->cur, new_freq);
+=======
+		if (now - pcpu->floor_validate_time < min_sample_time) {
+			spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
+>>>>>>> turn bacon into interactive
 			goto rearm;
 		}
 	}
@@ -481,15 +634,20 @@ static void cpufreq_interactive_timer(unsigned long data)
 	}
 
 	if (pcpu->target_freq == new_freq) {
+<<<<<<< HEAD
 		trace_cpufreq_interactive_already(
 			data, cpu_load, pcpu->target_freq,
 			pcpu->policy->cur, new_freq);
 		spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
+||||||| merged common ancestors
+		trace_cpufreq_interactive_already(
+			data, cpu_load, pcpu->target_freq,
+			pcpu->policy->cur, new_freq);
+=======
+		spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
+>>>>>>> turn bacon into interactive
 		goto rearm_if_notmax;
 	}
-
-	trace_cpufreq_interactive_target(data, cpu_load, pcpu->target_freq,
-					 pcpu->policy->cur, new_freq);
 
 	pcpu->target_freq = new_freq;
 	spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
@@ -538,9 +696,17 @@ static void cpufreq_interactive_idle_start(void)
 	now = ktime_to_us(ktime_get());
 	pending = timer_pending(&pcpu->cpu_timer);
 
+<<<<<<< HEAD
 	if (pcpu->target_freq > pcpu->policy->min ||
 	    (pcpu->target_freq == pcpu->policy->min &&
 			now < boostpulse_endtime)) {
+||||||| merged common ancestors
+	if (pcpu->target_freq != pcpu->policy->min) {
+=======
+	if (pcpu->target_freq > pcpu->policy->min ||
+	    (pcpu->target_freq == pcpu->policy->min &&
+	     now < boostpulse_endtime)) {
+>>>>>>> turn bacon into interactive
 		/*
 		 * Entering idle while not at lowest speed.  On some
 		 * platforms this can hold the other CPU(s) at that speed
@@ -550,6 +716,7 @@ static void cpufreq_interactive_idle_start(void)
 		 * the CPUFreq driver.
 		 */
 		if (!pending) {
+<<<<<<< HEAD
 			pcpu->last_evaluated_jiffy = get_jiffies_64();
 			cpufreq_interactive_timer_resched(smp_processor_id());
 
@@ -558,6 +725,19 @@ static void cpufreq_interactive_idle_start(void)
 			 * policy->max, record the time CPU first goes to
 			 * idle.
 			 */
+||||||| merged common ancestors
+			cpufreq_interactive_timer_resched(pcpu);
+
+=======
+			pcpu->last_evaluated_jiffy = get_jiffies_64();
+			cpufreq_interactive_timer_resched(smp_processor_id());
+			
+			/*
+			 * If timer is cancelled because CPU is running at
+			 * policy->max, record the time CPU first goes to
+			 * idle.
+			 */
+>>>>>>> turn bacon into interactive
 			now = ktime_to_us(ktime_get());
 			if (max_freq_hysteresis) {
 				spin_lock_irqsave(&pcpu->target_freq_lock,
@@ -649,6 +829,7 @@ static int cpufreq_interactive_speedchange_task(void *data)
 				}
 			}
 
+<<<<<<< HEAD
 			if (max_freq != pcpu->policy->cur) {
 				if (!powersave_bias)
 					__cpufreq_driver_target(pcpu->policy,
@@ -667,6 +848,25 @@ static int cpufreq_interactive_speedchange_task(void *data)
 			trace_cpufreq_interactive_setspeed(cpu,
 						     pcpu->target_freq,
 						     pcpu->policy->cur);
+||||||| merged common ancestors
+			if (max_freq != pcpu->policy->cur)
+				__cpufreq_driver_target(pcpu->policy,
+							max_freq,
+							CPUFREQ_RELATION_H);
+			trace_cpufreq_interactive_setspeed(cpu,
+						     pcpu->target_freq,
+						     pcpu->policy->cur);
+=======
+			if (max_freq != pcpu->policy->cur) {
+				__cpufreq_driver_target(pcpu->policy,
+							max_freq,
+							CPUFREQ_RELATION_H);
+				for_each_cpu(j, pcpu->policy->cpus) {
+					pjcpu = &per_cpu(cpuinfo, j);
+					pjcpu->hispeed_validate_time = hvt;
+				}
+			}
+>>>>>>> turn bacon into interactive
 
 			up_read(&pcpu->enable_sem);
 		}
@@ -909,13 +1109,20 @@ static ssize_t store_hispeed_freq(struct kobject *kobj,
 
 static struct global_attr hispeed_freq_attr = __ATTR(hispeed_freq, 0644,
 		show_hispeed_freq, store_hispeed_freq);
-
+		
 static ssize_t show_max_freq_hysteresis(struct kobject *kobj,
 				     struct attribute *attr, char *buf)
 {
 	return sprintf(buf, "%u\n", max_freq_hysteresis);
 }
 
+<<<<<<< HEAD
+static ssize_t show_max_freq_hysteresis(struct kobject *kobj,
+				     struct attribute *attr, char *buf)
+||||||| merged common ancestors
+static ssize_t show_sampling_down_factor(struct kobject *kobj,
+				struct attribute *attr, char *buf)
+=======
 static ssize_t store_max_freq_hysteresis(struct kobject *kobj,
 			struct attribute *attr, const char *buf, size_t count)
 {
@@ -929,6 +1136,52 @@ static ssize_t store_max_freq_hysteresis(struct kobject *kobj,
 	return count;
 }
 
+static struct global_attr max_freq_hysteresis_attr =
+	__ATTR(max_freq_hysteresis, 0644, show_max_freq_hysteresis,
+		store_max_freq_hysteresis);
+		
+static ssize_t show_align_windows(struct kobject *kobj,
+				     struct attribute *attr, char *buf)
+>>>>>>> turn bacon into interactive
+{
+<<<<<<< HEAD
+	return sprintf(buf, "%u\n", max_freq_hysteresis);
+||||||| merged common ancestors
+	return sprintf(buf, "%u\n", sampling_down_factor);
+=======
+	return sprintf(buf, "%u\n", align_windows);
+>>>>>>> turn bacon into interactive
+}
+
+<<<<<<< HEAD
+static ssize_t store_max_freq_hysteresis(struct kobject *kobj,
+			struct attribute *attr, const char *buf, size_t count)
+||||||| merged common ancestors
+static ssize_t store_sampling_down_factor(struct kobject *kobj,
+				struct attribute *attr, const char *buf,
+				size_t count)
+=======
+static ssize_t store_align_windows(struct kobject *kobj,
+			struct attribute *attr, const char *buf, size_t count)
+>>>>>>> turn bacon into interactive
+{
+	int ret;
+	unsigned long val;
+
+	ret = strict_strtoul(buf, 0, &val);
+	if (ret < 0)
+		return ret;
+<<<<<<< HEAD
+	max_freq_hysteresis = val;
+||||||| merged common ancestors
+	sampling_down_factor = val;
+=======
+	align_windows = val;
+>>>>>>> turn bacon into interactive
+	return count;
+}
+
+<<<<<<< HEAD
 static struct global_attr max_freq_hysteresis_attr =
 	__ATTR(max_freq_hysteresis, 0644, show_max_freq_hysteresis,
 		store_max_freq_hysteresis);
@@ -954,6 +1207,14 @@ static ssize_t store_align_windows(struct kobject *kobj,
 
 static struct global_attr align_windows_attr = __ATTR(align_windows, 0644,
 		show_align_windows, store_align_windows);
+||||||| merged common ancestors
+static struct global_attr sampling_down_factor_attr =
+				__ATTR(sampling_down_factor, 0644,
+		show_sampling_down_factor, store_sampling_down_factor);
+=======
+static struct global_attr align_windows_attr = __ATTR(align_windows, 0644,
+		show_align_windows, store_align_windows);
+>>>>>>> turn bacon into interactive
 
 static ssize_t show_go_hispeed_load(struct kobject *kobj,
 				     struct attribute *attr, char *buf)
@@ -1069,11 +1330,9 @@ static ssize_t store_boost(struct kobject *kobj, struct attribute *attr,
 	boost_val = val;
 
 	if (boost_val) {
-		trace_cpufreq_interactive_boost("on");
 		cpufreq_interactive_boost();
 	} else {
 		boostpulse_endtime = ktime_to_us(ktime_get());
-		trace_cpufreq_interactive_unboost("off");
 	}
 
 	return count;
@@ -1092,7 +1351,6 @@ static ssize_t store_boostpulse(struct kobject *kobj, struct attribute *attr,
 		return ret;
 
 	boostpulse_endtime = ktime_to_us(ktime_get()) + boostpulse_duration_val;
-	trace_cpufreq_interactive_boost("pulse");
 	cpufreq_interactive_boost();
 	return count;
 }
@@ -1145,6 +1403,7 @@ static ssize_t store_io_is_busy(struct kobject *kobj,
 static struct global_attr io_is_busy_attr = __ATTR(io_is_busy, 0644,
 		show_io_is_busy, store_io_is_busy);
 
+<<<<<<< HEAD
 static ssize_t show_powersave_bias(struct kobject *kobj,
 				     struct attribute *attr, char *buf)
 {
@@ -1167,6 +1426,79 @@ static ssize_t store_powersave_bias(struct kobject *kobj,
 static struct global_attr powersave_bias_attr = __ATTR(powersave_bias, 0644,
 		show_powersave_bias, store_powersave_bias);
 
+||||||| merged common ancestors
+static ssize_t show_sync_freq(struct kobject *kobj,
+			struct attribute *attr, char *buf)
+{
+	return sprintf(buf, "%u\n", sync_freq);
+}
+
+static ssize_t store_sync_freq(struct kobject *kobj,
+			struct attribute *attr, const char *buf, size_t count)
+{
+	int ret;
+	unsigned long val;
+
+	ret = kstrtoul(buf, 0, &val);
+	if (ret < 0)
+		return ret;
+	sync_freq = val;
+	return count;
+}
+
+static struct global_attr sync_freq_attr = __ATTR(sync_freq, 0644,
+		show_sync_freq, store_sync_freq);
+
+static ssize_t show_up_threshold_any_cpu_load(struct kobject *kobj,
+			struct attribute *attr, char *buf)
+{
+	return snprintf(buf, PAGE_SIZE, "%u\n", up_threshold_any_cpu_load);
+}
+
+static ssize_t store_up_threshold_any_cpu_load(struct kobject *kobj,
+			struct attribute *attr, const char *buf, size_t count)
+{
+	int ret;
+	unsigned long val;
+
+	ret = kstrtoul(buf, 0, &val);
+	if (ret < 0)
+		return ret;
+	up_threshold_any_cpu_load = val;
+	return count;
+}
+
+static struct global_attr up_threshold_any_cpu_load_attr =
+		__ATTR(up_threshold_any_cpu_load, 0644,
+		show_up_threshold_any_cpu_load,
+				store_up_threshold_any_cpu_load);
+
+static ssize_t show_up_threshold_any_cpu_freq(struct kobject *kobj,
+			struct attribute *attr, char *buf)
+{
+	return snprintf(buf, PAGE_SIZE, "%u\n", up_threshold_any_cpu_freq);
+}
+
+static ssize_t store_up_threshold_any_cpu_freq(struct kobject *kobj,
+			struct attribute *attr, const char *buf, size_t count)
+{
+	int ret;
+	unsigned long val;
+
+	ret = kstrtoul(buf, 0, &val);
+	if (ret < 0)
+		return ret;
+	up_threshold_any_cpu_freq = val;
+	return count;
+}
+
+static struct global_attr up_threshold_any_cpu_freq_attr =
+		__ATTR(up_threshold_any_cpu_freq, 0644,
+		show_up_threshold_any_cpu_freq,
+				store_up_threshold_any_cpu_freq);
+
+=======
+>>>>>>> turn bacon into interactive
 static struct attribute *interactive_attributes[] = {
 	&target_loads_attr.attr,
 	&above_hispeed_delay_attr.attr,
@@ -1179,9 +1511,19 @@ static struct attribute *interactive_attributes[] = {
 	&boostpulse.attr,
 	&boostpulse_duration.attr,
 	&io_is_busy_attr.attr,
+<<<<<<< HEAD
 	&max_freq_hysteresis_attr.attr,
 	&align_windows_attr.attr,
 	&powersave_bias_attr.attr,
+||||||| merged common ancestors
+	&sampling_down_factor_attr.attr,
+	&sync_freq_attr.attr,
+	&up_threshold_any_cpu_load_attr.attr,
+	&up_threshold_any_cpu_freq_attr.attr,
+=======
+	&max_freq_hysteresis_attr.attr,
+	&align_windows_attr.attr,
+>>>>>>> turn bacon into interactive
 	NULL,
 };
 
