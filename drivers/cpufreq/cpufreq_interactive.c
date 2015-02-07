@@ -565,7 +565,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 			pcpu->policy->cur, new_freq);
 =======
 	    freq_to_above_hispeed_delay(pcpu->policy->cur)) {
-	    	trace_cpufreq_interactive_notyet(
+		trace_cpufreq_interactive_notyet(
 			data, cpu_load, pcpu->target_freq,
 			pcpu->policy->cur, new_freq);
 		spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
@@ -601,7 +601,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 	if (pcpu->target_freq >= pcpu->policy->max
 	    && new_freq < pcpu->target_freq
 	    && now - pcpu->max_freq_idle_start_time < max_freq_hysteresis) {
-	    	trace_cpufreq_interactive_notyet(data, cpu_load,
+		trace_cpufreq_interactive_notyet(data, cpu_load,
 			pcpu->target_freq, pcpu->policy->cur, new_freq);
 		spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
 		goto rearm;
@@ -653,9 +653,6 @@ static void cpufreq_interactive_timer(unsigned long data)
 		pcpu->floor_validate_time = now;
 	}
 	
-	trace_cpufreq_interactive_target(data, cpu_load, pcpu->target_freq,
-					 pcpu->policy->cur, new_freq);
-
 	if (pcpu->target_freq == new_freq) {
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -678,6 +675,9 @@ static void cpufreq_interactive_timer(unsigned long data)
 >>>>>>> turn bacon into interactive
 		goto rearm_if_notmax;
 	}
+
+	trace_cpufreq_interactive_target(data, cpu_load, pcpu->target_freq,
+					 pcpu->policy->cur, new_freq);
 
 	pcpu->target_freq = new_freq;
 	spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
