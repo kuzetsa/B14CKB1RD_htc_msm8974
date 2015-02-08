@@ -274,12 +274,18 @@ static void cpufreq_interactive_timer_resched(unsigned long cpu)
 	pcpu->time_in_idle =
 		get_cpu_idle_time(smp_processor_id(),
 <<<<<<< HEAD
+<<<<<<< HEAD
 				  &pcpu->time_in_idle_timestamp, io_is_busy);
 ||||||| merged common ancestors
 				     &pcpu->time_in_idle_timestamp);
 =======
 				  &pcpu->time_in_idle_timestamp);
 >>>>>>> turn bacon into interactive
+||||||| merged common ancestors
+				  &pcpu->time_in_idle_timestamp);
+=======
+				&pcpu->time_in_idle_timestamp, io_is_busy);
+>>>>>>> cpufreq: Move get_cpu_idle_time() to cpufreq.c 4
 	pcpu->cputime_speedadj = 0;
 	pcpu->cputime_speedadj_timestamp = pcpu->time_in_idle_timestamp;
 	expires = round_to_nw_start(pcpu->last_evaluated_jiffy);
