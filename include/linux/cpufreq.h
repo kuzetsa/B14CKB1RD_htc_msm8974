@@ -321,10 +321,16 @@ __ATTR(_name, 0444, show_##_name, NULL)
 static struct global_attr _name =		\
 __ATTR(_name, 0644, show_##_name, store_##_name)
 
+<<<<<<< HEAD
 
 /*********************************************************************
  *                        CPUFREQ 2.6. INTERFACE                     *
  *********************************************************************/
+||||||| merged common ancestors
+
+=======
+u64 get_cpu_idle_time(unsigned int cpu, u64 *wall, int io_busy);
+>>>>>>> cpufreq: Move get_cpu_idle_time() to cpufreq.c 6
 int cpufreq_get_policy(struct cpufreq_policy *policy, unsigned int cpu);
 int cpufreq_update_policy(unsigned int cpu);
 <<<<<<< HEAD
