@@ -653,6 +653,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 	if (pcpu->target_freq >= pcpu->policy->max
 	    && new_freq < pcpu->target_freq
 	    && now - pcpu->max_freq_idle_start_time < max_freq_hysteresis) {
+<<<<<<< HEAD
 		trace_cpufreq_interactive_notyet(data, cpu_load,
 			pcpu->target_freq, pcpu->policy->cur, new_freq);
 		spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
@@ -664,6 +665,11 @@ static void cpufreq_interactive_timer(unsigned long data)
 	    && now - pcpu->max_freq_idle_start_time < max_freq_hysteresis) {
 	    	trace_cpufreq_interactive_notyet(data, cpu_load,
 			pcpu->target_freq, pcpu->policy->cur, new_freq);
+||||||| merged common ancestors
+=======
+	    	trace_cpufreq_interactive_notyet(data, cpu_load,
+			pcpu->target_freq, pcpu->policy->cur, new_freq);
+>>>>>>> readd trace to interactive
 		spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
 		goto rearm;
 	}
@@ -705,6 +711,7 @@ static void cpufreq_interactive_timer(unsigned long data)
 		pcpu->floor_validate_time = now;
 	}
 
+<<<<<<< HEAD
 	if (pcpu->target_freq == new_freq) {
 <<<<<<< HEAD
 <<<<<<< HEAD
@@ -723,6 +730,15 @@ static void cpufreq_interactive_timer(unsigned long data)
 			data, cpu_load, pcpu->target_freq,
 			pcpu->policy->cur, new_freq);
 >>>>>>> neobuddy interactive/bacon, whatever
+||||||| merged common ancestors
+	if (pcpu->target_freq == new_freq &&
+			pcpu->target_freq <= pcpu->policy->cur) {
+=======
+	if (pcpu->target_freq == new_freq) {
+		trace_cpufreq_interactive_already(
+			data, cpu_load, pcpu->target_freq,
+			pcpu->policy->cur, new_freq);
+>>>>>>> readd trace to interactive
 		spin_unlock_irqrestore(&pcpu->target_freq_lock, flags);
 >>>>>>> turn bacon into interactive
 		goto rearm_if_notmax;
@@ -927,6 +943,7 @@ static int cpufreq_interactive_speedchange_task(void *data)
 					pjcpu->hispeed_validate_time = hvt;
 				}
 			}
+<<<<<<< HEAD
 			trace_cpufreq_interactive_setspeed(cpu,
 						     pcpu->target_freq,
 						     pcpu->policy->cur);
@@ -956,6 +973,12 @@ static int cpufreq_interactive_speedchange_task(void *data)
 						     pcpu->target_freq,
 						     pcpu->policy->cur);
 >>>>>>> neobuddy interactive/bacon, whatever
+||||||| merged common ancestors
+=======
+			trace_cpufreq_interactive_setspeed(cpu,
+						     pcpu->target_freq,
+						     pcpu->policy->cur);
+>>>>>>> readd trace to interactive
 
 			up_read(&pcpu->enable_sem);
 		}
