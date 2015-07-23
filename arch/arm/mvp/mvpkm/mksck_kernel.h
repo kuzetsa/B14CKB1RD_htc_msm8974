@@ -18,11 +18,6 @@
  */
 #line 5
 
-/**
- * @file
- *
- * @brief The monitor-kernel socket interface kernel-only definitions.
- */
 
 #ifndef _MKSCK_KERNEL_H
 #define _MKSCK_KERNEL_H
@@ -33,9 +28,6 @@
 
 #include "mksck_shared.h"
 
-/*
- * prototypes
- */
 int        Mksck_Init(void);
 void       Mksck_Exit(void);
 void       Mksck_WakeBlockedSockets(MksckPage *mksckPage);
@@ -49,9 +41,6 @@ int        MksckPage_LookupAndInsertPage(struct vm_area_struct *vma,
 					 unsigned long address,
 					 MPN mpn);
 
-/*
- * Mksck open request must come from this uid.
- */
 extern uid_t Mvpkm_vmwareUid;
 
 #define MKSCK_DEVEL 0
