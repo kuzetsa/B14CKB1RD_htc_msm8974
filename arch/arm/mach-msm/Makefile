@@ -455,19 +455,21 @@ obj-$(CONFIG_MACH_M8) += board-m8-gpiomux.o board-m8-audio.o
 obj-$(CONFIG_MACH_M8_WHL) += board-m8-gpiomux.o board-m8-audio.o
 obj-$(CONFIG_MACH_M8_WL) += board-m8-gpiomux.o board-m8-audio.o
 obj-$(CONFIG_MACH_EYE_UL) += board-eye-gpiomux.o board-m8-audio.o
+obj-$(CONFIG_MACH_MEC_UL) += board-mec-gpiomux.o board-m8-audio.o
+obj-$(CONFIG_MACH_MEC_DWG) += board-mec-gpiomux.o board-m8-audio.o
+obj-$(CONFIG_MACH_MEC_DUG) += board-mec-gpiomux.o board-m8-audio.o
+obj-$(CONFIG_MACH_MEC_TL) += board-mec-gpiomux.o board-m8-audio.o
+obj-$(CONFIG_MACH_MEC_WHL) += board-mec-gpiomux.o board-m8-audio.o
 
 obj-$(CONFIG_HTC_HEADSET_PMIC) += htc_headset_pmic.o
 obj-$(CONFIG_HTC_HEADSET_GPIO) += htc_headset_gpio.o
 obj-$(CONFIG_HTC_HEADSET_ONE_WIRE) += htc_headset_one_wire.o
-
-obj-$(CONFIG_FORCE_FAST_CHARGE) += fastchg.o
 
 ifdef CONFIG_HTC_DEBUG
 obj-y += htc_debug_tools.o
 endif
 obj-y += smlog.o
 
-obj-$(CONFIG_PERFLOCK) += perflock.o
 obj-$(CONFIG_ARCH_RANDOM) += early_random.o
 obj-$(CONFIG_PERFMAP) += perfmap.o
 obj-$(CONFIG_HTC_RPM_CMD) += rpm_htc_cmd.o

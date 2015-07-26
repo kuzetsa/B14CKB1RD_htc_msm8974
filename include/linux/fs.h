@@ -217,8 +217,6 @@ struct inodes_stat_t {
 #define FITRIM		_IOWR('X', 121, struct fstrim_range)	
 #define FS_IOC_SHUTDOWN		_IOR('X', 125, __u32)	/* Shutdown */
 
-#define FIDTRIM	_IOWR('f', 128, struct fstrim_range)	/* Deep discard trim */
-
 #define	FS_IOC_GETFLAGS			_IOR('f', 1, long)
 #define	FS_IOC_SETFLAGS			_IOW('f', 2, long)
 #define	FS_IOC_GETVERSION		_IOR('v', 1, long)
@@ -674,11 +672,9 @@ static inline loff_t i_size_read(const struct inode *inode)
 static inline void i_size_write(struct inode *inode, loff_t i_size)
 {
 #if BITS_PER_LONG==32 && defined(CONFIG_SMP)
-	preempt_disable();
 	write_seqcount_begin(&inode->i_size_seqcount);
 	inode->i_size = i_size;
 	write_seqcount_end(&inode->i_size_seqcount);
-	preempt_enable();
 #elif BITS_PER_LONG==32 && defined(CONFIG_PREEMPT)
 	preempt_disable();
 	inode->i_size = i_size;

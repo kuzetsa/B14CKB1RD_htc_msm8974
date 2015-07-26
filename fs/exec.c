@@ -537,10 +537,10 @@ static int shift_arg_pages(struct vm_area_struct *vma, unsigned long shift)
 	tlb_gather_mmu(&tlb, mm, 0);
 	if (new_end > old_start) {
 		free_pgd_range(&tlb, new_end, old_end, new_end,
-			vma->vm_next ? vma->vm_next->vm_start : USER_PGTABLES_CEILING);
+			vma->vm_next ? vma->vm_next->vm_start : 0);
 	} else {
 		free_pgd_range(&tlb, old_start, old_end, new_end,
-			vma->vm_next ? vma->vm_next->vm_start : USER_PGTABLES_CEILING);
+			vma->vm_next ? vma->vm_next->vm_start : 0);
 	}
 	tlb_finish_mmu(&tlb, new_end, old_end);
 
@@ -773,13 +773,11 @@ static int de_thread(struct task_struct *tsk)
 
 		sig->notify_count = -1;	
 		for (;;) {
-			threadgroup_change_begin(tsk);
 			write_lock_irq(&tasklist_lock);
 			if (likely(leader->exit_state))
 				break;
 			__set_current_state(TASK_UNINTERRUPTIBLE);
 			write_unlock_irq(&tasklist_lock);
-			threadgroup_change_end(tsk);
 			schedule();
 		}
 
@@ -809,7 +807,6 @@ static int de_thread(struct task_struct *tsk)
 		if (unlikely(leader->ptrace))
 			__wake_up_parent(leader, leader->parent);
 		write_unlock_irq(&tasklist_lock);
-		threadgroup_change_end(tsk);
 
 		release_task(leader);
 	}
@@ -934,8 +931,7 @@ int flush_old_exec(struct linux_binprm * bprm)
 	bprm->mm = NULL;		
 
 	set_fs(USER_DS);
-	current->flags &=
-		~(PF_RANDOMIZE | PF_FORKNOEXEC | PF_KTHREAD | PF_NOFREEZE);
+	current->flags &= ~(PF_RANDOMIZE | PF_FORKNOEXEC | PF_KTHREAD);
 	flush_thread();
 	current->personality &= ~bprm->per_clear;
 
@@ -1010,27 +1006,9 @@ void free_bprm(struct linux_binprm *bprm)
 		mutex_unlock(&current->signal->cred_guard_mutex);
 		abort_creds(bprm->cred);
 	}
-	/* If a binfmt changed the interp, free it. */
-	if (bprm->interp != bprm->filename)
-		kfree(bprm->interp);
 	kfree(bprm);
 }
 
-int bprm_change_interp(char *interp, struct linux_binprm *bprm)
-{
-	/* If a binfmt changed the interp, free it first. */
-	if (bprm->interp != bprm->filename)
-		kfree(bprm->interp);
-	bprm->interp = kstrdup(interp, GFP_KERNEL);
-	if (!bprm->interp)
-		return -ENOMEM;
-	return 0;
-}
-EXPORT_SYMBOL(bprm_change_interp);
-
- /*
-  * install the new credentials for this executable
-  */
 void install_exec_creds(struct linux_binprm *bprm)
 {
 	security_bprm_committing_creds(bprm);
@@ -1054,13 +1032,6 @@ static int check_unsafe_exec(struct linux_binprm *bprm)
 		else
 			bprm->unsafe |= LSM_UNSAFE_PTRACE;
 	}
-	
-	/*
-	 * This isn't strictly necessary, but it makes it harder for LSMs to
-	 * mess up.
-	 */
-	if (task_no_new_privs(current))
-		bprm->unsafe |= LSM_UNSAFE_NO_NEW_PRIVS;
 
 	n_fs = 1;
 	spin_lock(&p->fs->lock);
@@ -1096,8 +1067,7 @@ static void bprm_fill_uid(struct linux_binprm *bprm)
 	bprm->cred->euid = current_euid();
 	bprm->cred->egid = current_egid();
 
-	if (!(bprm->file->f_path.mnt->mnt_flags & MNT_NOSUID) &&
-	    !task_no_new_privs(current))
+	if (bprm->file->f_path.mnt->mnt_flags & MNT_NOSUID)
 		return;
 
 	inode = bprm->file->f_path.dentry->d_inode;
@@ -1758,12 +1728,6 @@ static int __get_dumpable(unsigned long mm_flags)
 	return (ret >= 2) ? 2 : ret;
 }
 
-/*
- * This returns the actual value of the suid_dumpable flag. For things
- * that are using this for checking for privilege transitions, it must
- * test against SUID_DUMP_USER rather than treating it as a boolean
- * value.
- */
 int get_dumpable(struct mm_struct *mm)
 {
 	return __get_dumpable(mm->flags);
