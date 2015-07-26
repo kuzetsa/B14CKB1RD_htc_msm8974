@@ -18,36 +18,21 @@
  */
 #line 5
 
-/**
- * @file
- *
- * @brief Communication functions based on transport functionality.
- */
 
 #include "comm_os.h"
 #include "comm_os_mod_ver.h"
 #include "comm_svc.h"
 
 
-/*
- * Initialization of module entry and exit callbacks expected by module
- * loading/unloading functions in comm_os.
- */
 
 static int Init(void *args);
 static void Exit(void);
 
 COMM_OS_MOD_INIT(Init, Exit);
 
-static int running;                 /* Initialized and running. */
+static int running;                 
 
 
-/**
- * @brief Allocates and initializes comm global state.
- *    Starts input dispatch and aio threads.
- * @param argsIn arguments
- * @return zero if successful, non-zero otherwise.
- */
 
 static int
 Init(void *argsIn)
@@ -55,10 +40,6 @@ Init(void *argsIn)
 	int rc = -1;
 	unsigned int maxChannels = 8;
 
-	/*
-	 * On the host side, infinite timeout. 1 polling cycle.
-	 * see kernel/time.c: msecs_to_jiffies()
-	 */
 #if defined(COMM_BUILDING_SERVER)
 	unsigned int pollingMillis = (unsigned int)-1;
 #else
@@ -68,7 +49,7 @@ Init(void *argsIn)
 	const char *args = argsIn;
 
 	if (args && *args) {
-		/* coverity[secure_coding] */
+		
 		sscanf(args,
 		       "max_channels:%u,poll_millis:%u,poll_cycles:%u",
 		       &maxChannels, &pollingMillis, &pollingCycles);
@@ -85,7 +66,7 @@ Init(void *argsIn)
 	if (rc) {
 		unsigned long long timeout = 0;
 
-		Comm_Finish(&timeout); /* Nothing started, always succeeds. */
+		Comm_Finish(&timeout); 
 		goto out;
 	}
 
@@ -97,10 +78,6 @@ out:
 }
 
 
-/**
- * @brief Attempts to close all channels.
- * @return zero if successful, non-zero otherwise.
- */
 
 static int
 Halt(void)
@@ -129,10 +106,6 @@ out:
 }
 
 
-/**
- * @brief Stops the comm_rt module.
- *    If Halt() call successful, stops input dispatch and aio threads.
- */
 
 static void
 Exit(void)
@@ -142,12 +115,6 @@ Exit(void)
 }
 
 
-/**
- * @brief Registers an implementation block used when attaching to channels
- *    in response to transport attach events.
- * @param impl implementation block.
- * @return 0 if successful, non-zero otherwise.
- */
 
 int
 CommSvc_RegisterImpl(const CommImpl *impl)
@@ -156,14 +123,9 @@ CommSvc_RegisterImpl(const CommImpl *impl)
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_RegisterImpl);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Unregisters an implementation block used when attaching to channels
- *    in response to transport attach events.
- * @param impl implementation block.
- */
 
 void
 CommSvc_UnregisterImpl(const CommImpl *impl)
@@ -172,19 +134,9 @@ CommSvc_UnregisterImpl(const CommImpl *impl)
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_UnregisterImpl);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Finds a free entry and initializes it with the information provided.
- *     May be called from BH. It doesn't call potentially blocking functions.
- * @param transpArgs transport initialization arguments.
- * @param impl implementation block.
- * @param inBH non-zero if called in bottom half.
- * @param[out] newChannel newly allocated channel.
- * @return zero if successful, non-zero otherwise.
- * @sideeffects Initializes the communications channel with given parameters
- */
 
 int
 CommSvc_Alloc(const CommTranspInitArgs *transpArgs,
@@ -196,15 +148,9 @@ CommSvc_Alloc(const CommTranspInitArgs *transpArgs,
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_Alloc);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Zombifies a channel. May fail if channel isn't active.
- * @param channel channel to zombify.
- * @param inBH non-zero if called in bottom half.
- * @return zero if channel zombified, non-zero otherwise.
- */
 
 int
 CommSvc_Zombify(CommChannel channel,
@@ -214,14 +160,9 @@ CommSvc_Zombify(CommChannel channel,
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_Zombify);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Reports whether a channel is active.
- * @param channel channel to report on.
- * @return non-zero if channel active, zero otherwise.
- */
 
 int
 CommSvc_IsActive(CommChannel channel)
@@ -230,15 +171,9 @@ CommSvc_IsActive(CommChannel channel)
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_IsActive);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Retrieves a channel's transport initialization arguments.
- *     It doesn't lock, the caller must ensure the channel may be accessed.
- * @param channel CommChannel structure to get initialization arguments from.
- * @return initialization arguments used to allocate/attach to channel.
- */
 
 CommTranspInitArgs
 CommSvc_GetTranspInitArgs(CommChannel channel)
@@ -247,15 +182,9 @@ CommSvc_GetTranspInitArgs(CommChannel channel)
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_GetTranspInitArgs);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Retrieves upper layer state (pointer). It doesn't lock, the caller
- *     must ensure the channel may be accessed.
- * @param channel CommChannel structure to get state from.
- * @return pointer to upper layer state.
- */
 
 void *
 CommSvc_GetState(CommChannel channel)
@@ -264,7 +193,7 @@ CommSvc_GetState(CommChannel channel)
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_GetState);
-#endif /* defined(__linux__) */
+#endif 
 
 
 /**
@@ -292,7 +221,7 @@ CommSvc_Write(CommChannel channel,
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_Write);
-#endif /* defined(__linux__) */
+#endif 
 
 
 /**
@@ -331,16 +260,9 @@ CommSvc_WriteVec(CommChannel channel,
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_WriteVec);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Releases channel ref count. This function is exported for the upper
- *    layer's 'activateNtf' callback which may be run asynchronously. The
- *    callback is protected from concurrent channel releases until it calls
- *    this function.
- * @param[in,out] channel CommChannel structure to release.
- */
 
 void
 CommSvc_Put(CommChannel channel)
@@ -349,15 +271,9 @@ CommSvc_Put(CommChannel channel)
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_Put);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Uses the read lock. This function is exported for the upper layer
- *    such that it can order acquisition of a different lock (socket) with
- *    the release of the dispatch lock.
- * @param[in,out] channel CommChannel structure to unlock.
- */
 
 void
 CommSvc_DispatchUnlock(CommChannel channel)
@@ -366,20 +282,9 @@ CommSvc_DispatchUnlock(CommChannel channel)
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_DispatchUnlock);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Lock the channel.
- *
- *    Uses the writer lock. This function is exported for the upper layer
- *    to ensure that channel isn't closed while updating the layer state.
- *    It also guarantees that if the lock is taken, the entry is either ACTIVE
- *    or ZOMBIE. Operations using this function are expected to be short,
- *    since unlike the _Write functions, these callers cannot be signaled.
- * @param[in,out] channel CommChannel structure to lock.
- * @return zero if successful, -1 otherwise.
- */
 
 int
 CommSvc_Lock(CommChannel channel)
@@ -388,17 +293,9 @@ CommSvc_Lock(CommChannel channel)
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_Lock);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Unlock the channel.
- *
- *    Uses the writer lock. This function is exported for the upper layer
- *    to ensure that channel isn't closed while updating the layer state.
- *    See Comm_WriteLock for details).
- * @param[in,out] channel CommChannel structure to unlock.
- */
 
 void
 CommSvc_Unlock(CommChannel channel)
@@ -407,14 +304,9 @@ CommSvc_Unlock(CommChannel channel)
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_Unlock);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Schedules a work item on the AIO thread(s).
- * @param[in,out] work work item to be scheduled.
- * @return zero if successful, -1 otherwise.
- */
 
 int
 CommSvc_ScheduleAIOWork(CommOSWork *work)
@@ -423,14 +315,9 @@ CommSvc_ScheduleAIOWork(CommOSWork *work)
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_ScheduleAIOWork);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Requests events be posted in-line after the function completes.
- * @param channel channel object.
- * @return current number of requests for inline event posting, or -1 on error.
- */
 
 unsigned int
 CommSvc_RequestInlineEvents(CommChannel channel)
@@ -439,14 +326,9 @@ CommSvc_RequestInlineEvents(CommChannel channel)
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_RequestInlineEvents);
-#endif /* defined(__linux__) */
+#endif 
 
 
-/**
- * @brief Requests events be posted out-of-band after the function completes.
- * @param channel channel object.
- * @return current number of requests for inline event posting, or -1 on error.
- */
 
 unsigned int
 CommSvc_ReleaseInlineEvents(CommChannel channel)
@@ -455,5 +337,5 @@ CommSvc_ReleaseInlineEvents(CommChannel channel)
 }
 #if defined(__linux__)
 EXPORT_SYMBOL(CommSvc_ReleaseInlineEvents);
-#endif /* defined(__linux__) */
+#endif 
 

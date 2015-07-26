@@ -10,10 +10,6 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  */
-/*
- * Qualcomm TSENS Header file
- *
- */
 
 #ifndef __MSM_TSENS_H
 #define __MSM_TSENS_H
@@ -63,4 +59,4 @@ int tsens_get_max_sensor_num(uint32_t *tsens_num_sensors);
 static inline int tsens_get_max_sensor_num(uint32_t *tsens_num_sensors)
 { return -ENXIO; }
 #endif
-#endif /*MSM_TSENS_H */
+#endif 

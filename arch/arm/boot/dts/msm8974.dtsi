@@ -908,7 +908,7 @@
                 interrupts = <0 97 0>;
                 interrupt-names = "qup_err_intr";
                 qcom,i2c-bus-freq = <384000>;
-                qcom,i2c-src-freq = <50000000>;
+                qcom,i2c-src-freq = <19200000>;
                 qcom,scl-gpio = <&msmgpio 11 0>;
                 qcom,sda-gpio = <&msmgpio 10 0>;
 		qcom,master-id = <86>;
@@ -924,7 +924,7 @@
                 interrupts = <0 98 0>;
                 interrupt-names = "qup_err_intr";
                 qcom,i2c-bus-freq = <384000>;
-                qcom,i2c-src-freq = <50000000>;
+                qcom,i2c-src-freq = <19200000>;
 		qcom,scl-gpio = <&msmgpio 22 0>;
 		qcom,sda-gpio = <&msmgpio 21 0>;
 		qcom,master-id = <86>;
@@ -940,7 +940,7 @@
                 interrupts = <0 100 0>;
                 interrupt-names = "qup_err_intr";
                 qcom,i2c-bus-freq = <384000>;
-                qcom,i2c-src-freq = <50000000>;
+                qcom,i2c-src-freq = <19200000>;
                 qcom,scl-gpio = <&msmgpio 30 0>;
                 qcom,sda-gpio = <&msmgpio 29 0>;
 		qcom,master-id = <86>;
@@ -2120,8 +2120,8 @@
 		compatible = "qcom,msm-watchdog";
 		reg = <0xf9017000 0x1000>;
 		interrupts = <0 3 0>, <0 4 0>;
-		qcom,bark-time = <18000>;
-		qcom,pet-time = <8000>;
+		qcom,bark-time = <21000>;
+		qcom,pet-time = <20000>;
 		qcom,ipi-ping;
 		htc,scm-regsave-phys = <0x5bf0000>; /* HTC_DEBUG_INFO_PHYS + HTC_DEBUG_INFO_TZLOG_SIZE */
 		htc,scm-regsave-size = <0x1000>; /* SZ_4K */

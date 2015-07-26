@@ -29,6 +29,7 @@
 #include <linux/genhd.h>
 #include <linux/highmem.h>
 #include <linux/slab.h>
+
 #include <linux/string.h>
 #include <linux/vmalloc.h>
 #include <linux/err.h>
@@ -38,7 +39,6 @@
 /* Globals */
 static int zram_major;
 static struct zram *zram_devices;
-static const char *default_compressor = "lzo";
 
 /* Module params (documentation at end) */
 static unsigned int num_devices = 1;
@@ -446,6 +446,8 @@ static int zram_bvec_write(struct zram *zram, struct bio_vec *bvec, u32 index,
 	bool locked = false;
 
 	page = bvec->bv_page;
+	src = meta->compress_buffer;
+
 	if (is_partial_io(bvec)) {
 		/*
 		 * This is a partial IO. We need to read the full page
@@ -498,9 +500,11 @@ static int zram_bvec_write(struct zram *zram, struct bio_vec *bvec, u32 index,
 		pr_err("Compression failed! err=%d\n", ret);
 		goto out;
 	}
+	
 	src = zstrm->buffer;
 	if (unlikely(clen > max_zpage_size)) {
 		clen = PAGE_SIZE;
+		src = NULL;
 		if (is_partial_io(bvec))
 			src = uncmem;
 	}
@@ -545,6 +549,7 @@ out:
 		zcomp_strm_release(zram->comp, zstrm);
 	if (is_partial_io(bvec))
 		kfree(uncmem);
+
 	return ret;
 }
 
@@ -692,7 +697,7 @@ static ssize_t disksize_store(struct device *dev,
 	zram->disksize = disksize;
 	set_capacity(zram->disk, zram->disksize >> SECTOR_SHIFT);
 	up_write(&zram->init_lock);
-
+	
 	/*
 	 * Revalidate disk out of the init_lock to avoid lockdep splat.
 	 * It's okay because disk's capacity is protected by init_lock
@@ -701,7 +706,7 @@ static ssize_t disksize_store(struct device *dev,
 	revalidate_disk(zram->disk);
 
 	return len;
-
+	
 out_destroy_comp:
 	up_write(&zram->init_lock);
 	zcomp_destroy(comp);

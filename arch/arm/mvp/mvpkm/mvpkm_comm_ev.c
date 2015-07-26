@@ -18,11 +18,6 @@
  */
 #line 5
 
-/**
- * @file
- *
- * @brief mvpkm kernel hooks for Comm event signaling
- */
 
 #include <linux/module.h>
 #include "comm_transp_impl.h"
@@ -30,12 +25,6 @@
 int (*CommTranspEvProcess)(CommTranspID *id, CommTranspIOEvent event);
 
 
-/**
- * @brief Register a processing callback for the host when a signal
- *      is received from the guest. Supports only a single comm "service"
- *      on the host.
- * @param commProcessFunc function pointer to process a signal
- */
 
 void
 Mvpkm_CommEvRegisterProcessCB(int (*commProcessFunc)(CommTranspID*,
@@ -45,10 +34,6 @@ Mvpkm_CommEvRegisterProcessCB(int (*commProcessFunc)(CommTranspID*,
 }
 EXPORT_SYMBOL(Mvpkm_CommEvRegisterProcessCB);
 
-/**
- * @brief Unregister the processing callback for the host when a signal
- *      is received from the guest.
- */
 
 void
 Mvpkm_CommEvUnregisterProcessCB(void)

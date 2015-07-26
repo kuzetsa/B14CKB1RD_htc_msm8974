@@ -22,7 +22,10 @@
 #include "acpuclock.h"
 #include "acpuclock-krait.h"
 
-/* Corner type vreg VDD values */
+#ifdef CONFIG_PERFLOCK
+#include <mach/perflock.h>
+#endif
+
 #define LVL_NONE	RPM_REGULATOR_CORNER_NONE
 #define LVL_LOW		RPM_REGULATOR_CORNER_SVS_SOC
 #define LVL_NOM		RPM_REGULATOR_CORNER_NORMAL
@@ -96,15 +99,15 @@ static struct scalable scalable[] __initdata = {
 };
 
 static struct msm_bus_paths bw_level_tbl[] __initdata = {
-	[0] =  BW_MBPS(600), /* At least  75 MHz on bus. */
-	[1] =  BW_MBPS(800), /* At least 100 MHz on bus. */
-	[2] = BW_MBPS(1200), /* At least 150 MHz on bus. */
-	[3] = BW_MBPS(1600), /* At least 200 MHz on bus. */
-	[4] = BW_MBPS(2456), /* At least 307 MHz on bus. */
-	[5] = BW_MBPS(3680), /* At least 460 MHz on bus. */
-	[6] = BW_MBPS(4912), /* At least 614 MHz on bus. */
-	[7] = BW_MBPS(6400), /* At least 800 MHz on bus. */
-	[8] = BW_MBPS(7448), /* At least 931 MHz on bus. */
+	[0] =  BW_MBPS(600), 
+	[1] =  BW_MBPS(800), 
+	[2] = BW_MBPS(1200), 
+	[3] = BW_MBPS(1600), 
+	[4] = BW_MBPS(2456), 
+	[5] = BW_MBPS(3680), 
+	[6] = BW_MBPS(4912), 
+	[7] = BW_MBPS(6400), 
+	[8] = BW_MBPS(7448), 
 };
 
 static struct l2_level l2_freq_tbl[] __initdata = {
@@ -2289,7 +2292,7 @@ static struct acpu_level pro_rev1_2p3g_pvs15[] __initdata = {
 };
 
 static struct pvs_table pvs_v2[NUM_PVS_REVS][NUM_SPEED_BINS][NUM_PVS] __initdata = {
-	/* 8974v2 2.0GHz Parts */
+	
 	[0][0][0] = { acpu_freq_tbl_2g_pvs0, sizeof(acpu_freq_tbl_2g_pvs0) },
 	[0][0][1] = { acpu_freq_tbl_2g_pvs1, sizeof(acpu_freq_tbl_2g_pvs1) },
 	[0][0][2] = { acpu_freq_tbl_2g_pvs2, sizeof(acpu_freq_tbl_2g_pvs2) },
@@ -2299,7 +2302,7 @@ static struct pvs_table pvs_v2[NUM_PVS_REVS][NUM_SPEED_BINS][NUM_PVS] __initdata
 	[0][0][6] = { acpu_freq_tbl_2g_pvs6, sizeof(acpu_freq_tbl_2g_pvs6) },
 	[0][0][7] = { acpu_freq_tbl_2g_pvs6, sizeof(acpu_freq_tbl_2g_pvs6) },
 
-	/* 8974v2 2.3GHz Parts */
+	
 	[0][1][0] = { acpu_freq_tbl_2p3g_pvs0, sizeof(acpu_freq_tbl_2p3g_pvs0) },
 	[0][1][1] = { acpu_freq_tbl_2p3g_pvs1, sizeof(acpu_freq_tbl_2p3g_pvs1) },
 	[0][1][2] = { acpu_freq_tbl_2p3g_pvs2, sizeof(acpu_freq_tbl_2p3g_pvs2) },
@@ -2309,7 +2312,7 @@ static struct pvs_table pvs_v2[NUM_PVS_REVS][NUM_SPEED_BINS][NUM_PVS] __initdata
 	[0][1][6] = { acpu_freq_tbl_2p3g_pvs6, sizeof(acpu_freq_tbl_2p3g_pvs6) },
 	[0][1][7] = { acpu_freq_tbl_2p3g_pvs6, sizeof(acpu_freq_tbl_2p3g_pvs6) },
 
-	/* 8974v2 2.2GHz Parts */
+	
 	[0][2][0] = { acpu_freq_tbl_2p2g_pvs0, sizeof(acpu_freq_tbl_2p2g_pvs0) },
 	[0][2][1] = { acpu_freq_tbl_2p2g_pvs1, sizeof(acpu_freq_tbl_2p2g_pvs1) },
 	[0][2][2] = { acpu_freq_tbl_2p2g_pvs2, sizeof(acpu_freq_tbl_2p2g_pvs2) },
@@ -2321,7 +2324,7 @@ static struct pvs_table pvs_v2[NUM_PVS_REVS][NUM_SPEED_BINS][NUM_PVS] __initdata
 };
 
 static struct pvs_table pvs_pro[NUM_PVS_REVS][NUM_SPEED_BINS][NUM_PVS] __initdata = {
-	/* 2.0 GHz is not used on 8974Pro */
+	
 	[0][0][0] = { acpu_freq_tbl_2g_pvs0, sizeof(acpu_freq_tbl_2g_pvs0) },
 	[0][0][1] = { acpu_freq_tbl_2g_pvs1, sizeof(acpu_freq_tbl_2g_pvs1) },
 	[0][0][2] = { acpu_freq_tbl_2g_pvs2, sizeof(acpu_freq_tbl_2g_pvs2) },
@@ -2331,7 +2334,7 @@ static struct pvs_table pvs_pro[NUM_PVS_REVS][NUM_SPEED_BINS][NUM_PVS] __initdat
 	[0][0][6] = { acpu_freq_tbl_2g_pvs6, sizeof(acpu_freq_tbl_2g_pvs6) },
 	[0][0][7] = { acpu_freq_tbl_2g_pvs6, sizeof(acpu_freq_tbl_2g_pvs6) },
 
-	/* 8974Pro AB 2.3GHz */
+	
 	[0][1][0] = { pro_rev0_2p3g_pvs0, sizeof(pro_rev0_2p3g_pvs0) },
 	[0][1][1] = { pro_rev0_2p3g_pvs1, sizeof(pro_rev0_2p3g_pvs1) },
 	[0][1][2] = { pro_rev0_2p3g_pvs2, sizeof(pro_rev0_2p3g_pvs2) },
@@ -2341,7 +2344,7 @@ static struct pvs_table pvs_pro[NUM_PVS_REVS][NUM_SPEED_BINS][NUM_PVS] __initdat
 	[0][1][6] = { pro_rev0_2p3g_pvs6, sizeof(pro_rev0_2p3g_pvs6) },
 	[0][1][7] = { pro_rev0_2p3g_pvs6, sizeof(pro_rev0_2p3g_pvs6) },
 
-	/* 2.2GHz is not used on 8974Pro */
+	
 	[0][2][0] = { acpu_freq_tbl_2p2g_pvs0, sizeof(acpu_freq_tbl_2p2g_pvs0) },
 	[0][2][1] = { acpu_freq_tbl_2p2g_pvs1, sizeof(acpu_freq_tbl_2p2g_pvs1) },
 	[0][2][2] = { acpu_freq_tbl_2p2g_pvs2, sizeof(acpu_freq_tbl_2p2g_pvs2) },
@@ -2351,7 +2354,7 @@ static struct pvs_table pvs_pro[NUM_PVS_REVS][NUM_SPEED_BINS][NUM_PVS] __initdat
 	[0][2][6] = { acpu_freq_tbl_2p2g_pvs6, sizeof(acpu_freq_tbl_2p2g_pvs6) },
 	[0][2][7] = { acpu_freq_tbl_2p2g_pvs6, sizeof(acpu_freq_tbl_2p2g_pvs6) },
 
-	/* 8974Pro AC 2.5GHz */
+	
 	[0][3][0] = { pro_rev0_2p5g_pvs0, sizeof(pro_rev0_2p5g_pvs0) },
 	[0][3][1] = { pro_rev0_2p5g_pvs1, sizeof(pro_rev0_2p5g_pvs1) },
 	[0][3][2] = { pro_rev0_2p5g_pvs2, sizeof(pro_rev0_2p5g_pvs2) },
@@ -2361,7 +2364,7 @@ static struct pvs_table pvs_pro[NUM_PVS_REVS][NUM_SPEED_BINS][NUM_PVS] __initdat
 	[0][3][6] = { pro_rev0_2p5g_pvs6, sizeof(pro_rev0_2p5g_pvs6) },
 	[0][3][7] = { pro_rev0_2p5g_pvs6, sizeof(pro_rev0_2p5g_pvs6) },
 
-	/* 8974Pro AB 2.3GHz */
+	
 	[1][1][0] = { pro_rev1_2p3g_pvs0, sizeof(pro_rev1_2p3g_pvs0) },
 	[1][1][1] = { pro_rev1_2p3g_pvs1, sizeof(pro_rev1_2p3g_pvs1) },
 	[1][1][2] = { pro_rev1_2p3g_pvs2, sizeof(pro_rev1_2p3g_pvs2) },
@@ -2379,7 +2382,7 @@ static struct pvs_table pvs_pro[NUM_PVS_REVS][NUM_SPEED_BINS][NUM_PVS] __initdat
 	[1][1][14] = { pro_rev1_2p3g_pvs14, sizeof(pro_rev1_2p3g_pvs14) },
 	[1][1][15] = { pro_rev1_2p3g_pvs15, sizeof(pro_rev1_2p3g_pvs15) },
 
-	/* 8974Pro AC 2.5GHz */
+	
 	[1][3][0] = { pro_rev1_2p5g_pvs0, sizeof(pro_rev1_2p5g_pvs0) },
 	[1][3][1] = { pro_rev1_2p5g_pvs1, sizeof(pro_rev1_2p5g_pvs1) },
 	[1][3][2] = { pro_rev1_2p5g_pvs2, sizeof(pro_rev1_2p5g_pvs2) },
@@ -2417,6 +2420,38 @@ static struct acpuclk_krait_params acpuclk_8974_params __initdata = {
 	.stby_khz = 300000,
 };
 
+#ifdef CONFIG_PERFLOCK
+unsigned msm8974_perf_acpu_table[] = {
+        652800000,  
+        883200000,  
+        1036800000, 
+        1190400000, 
+        1958400000, 
+};
+
+static struct perflock_data msm8974_floor_data = {
+        .perf_acpu_table = msm8974_perf_acpu_table,
+        .table_size = ARRAY_SIZE(msm8974_perf_acpu_table),
+};
+
+static struct perflock_data msm8974_cpufreq_ceiling_data = {
+        .perf_acpu_table = msm8974_perf_acpu_table,
+        .table_size = ARRAY_SIZE(msm8974_perf_acpu_table),
+};
+
+static struct perflock_pdata perflock_pdata = {
+        .perf_floor = &msm8974_floor_data,
+        .perf_ceiling = &msm8974_cpufreq_ceiling_data,
+};
+
+struct platform_device msm8974_device_perf_lock = {
+        .name = "perf_lock",
+        .id = -1,
+        .dev = {
+        .platform_data = &perflock_pdata,
+    },
+};
+#endif
 #define cpu_is_msm8974pro() (cpu_is_msm8974pro_aa() || cpu_is_msm8974pro_ab() \
 			     || cpu_is_msm8974pro_ac())
 

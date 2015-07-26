@@ -1288,12 +1288,14 @@ void regulator_put(struct regulator *regulator)
 		device_remove_file(regulator->dev, &regulator->dev_attr);
 		kfree(regulator->dev_attr.attr.name);
 	}
+	mutex_lock(&rdev->mutex);
 	kfree(regulator->supply_name);
 	list_del(&regulator->list);
 	kfree(regulator);
 
 	rdev->open_count--;
 	rdev->exclusive = 0;
+	mutex_unlock(&rdev->mutex);
 
 	module_put(rdev->owner);
 	mutex_unlock(&regulator_list_mutex);
@@ -1557,8 +1559,9 @@ int regulator_disable_deferred(struct regulator *regulator, int ms)
 	rdev->deferred_disables++;
 	mutex_unlock(&rdev->mutex);
 
-	ret = schedule_delayed_work(&rdev->disable_work,
-				    msecs_to_jiffies(ms));
+	ret = queue_delayed_work(system_power_efficient_wq,
+				 &rdev->disable_work,
+				 msecs_to_jiffies(ms));
 	if (ret < 0)
 		return ret;
 	else

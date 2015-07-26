@@ -18,11 +18,6 @@
  */
 #line 5
 
-/**
- *  @file
- *
- *  @brief Exception-related definitions. See A2.6 ARM DDI 0100I.
- */
 
 #ifndef _EXC_DEFS_H_
 #define _EXC_DEFS_H_
@@ -64,4 +59,4 @@
 	(((cpsr) & ARM_PSR_T) ? EXC_THUMB_##exc##_SAVED_PC_OFFSET :	\
 				EXC_ARM_##exc##_SAVED_PC_OFFSET)
 
-#endif /* _EXC_DEFS_H_ */
+#endif 

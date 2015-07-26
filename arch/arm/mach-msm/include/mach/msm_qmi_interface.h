@@ -114,18 +114,14 @@ int qmi_send_req_nowait(struct qmi_handle *handle,
 int qmi_recv_msg(struct qmi_handle *handle);
 
 int qmi_connect_to_service(struct qmi_handle *handle,
-			   uint32_t service_id,
-			   uint32_t service_vers,
-			   uint32_t service_ins);
+			   uint32_t service_id, uint32_t instance_id);
 
 int qmi_svc_event_notifier_register(uint32_t service_id,
-				    uint32_t service_vers,
-				    uint32_t service_ins,
+				    uint32_t instance_id,
 				    struct notifier_block *nb);
 
 int qmi_svc_event_notifier_unregister(uint32_t service_id,
-				      uint32_t service_vers,
-				      uint32_t service_ins,
+				      uint32_t instance_id,
 				      struct notifier_block *nb);
 #else
 
@@ -183,23 +179,20 @@ static inline int qmi_recv_msg(struct qmi_handle *handle)
 
 static inline int qmi_connect_to_service(struct qmi_handle *handle,
 					 uint32_t service_id,
-					 uint32_t service_vers,
-					 uint32_t service_ins)
+					 uint32_t instance_id)
 {
 	return -ENODEV;
 }
 
 static inline int qmi_svc_event_notifier_register(uint32_t service_id,
-						  uint32_t service_vers,
-						  uint32_t service_ins,
+						  uint32_t instance_id,
 						  struct notifier_block *nb)
 {
 	return -ENODEV;
 }
 
 static inline int qmi_svc_event_notifier_unregister(uint32_t service_id,
-						    uint32_t service_vers,
-						    uint32_t service_ins,
+						    uint32_t instance_id,
 						    struct notifier_block *nb)
 {
 	return -ENODEV;

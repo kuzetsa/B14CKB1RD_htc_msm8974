@@ -56,15 +56,19 @@ static int lowmem_adj[6] = {
 	1,
 	6,
 	12,
+	13,
+	15,
 };
-static int lowmem_adj_size = 4;
+static int lowmem_adj_size = 6;
 static int lowmem_minfree[6] = {
-	3 * 512,	/* 6MB */
-	2 * 1024,	/* 8MB */
-	4 * 1024,	/* 16MB */
-	16 * 1024,	/* 64MB */
+	 3 *  512,	/* Foreground App: 	6 MB	*/
+	 2 * 1024,	/* Visible App: 	8 MB	*/
+	 4 * 1024,	/* Secondary Server: 	16 MB	*/
+	16 * 1024,	/* Hidden App: 		64 MB	*/
+	28 * 1024,	/* Content Provider: 	112 MB	*/
+	32 * 1024,	/* Empty App: 		128 MB	*/	
 };
-static int lowmem_minfree_size = 4;
+static int lowmem_minfree_size = 6;
 
 static unsigned long lowmem_deathpending_timeout;
 static uint32_t lowmem_sleep_ms = 1;
@@ -76,14 +80,6 @@ static uint32_t lowmem_only_kswapd_sleep = 1;
 			printk(x);			\
 	} while (0)
 
-/**
- * dump_tasks - dump current memory state of all system tasks
- *
- * State information includes task's pid, uid, tgid, vm size, rss, cpu, oom_adj
- * value, oom_score_adj value, and name.
- *
- * Call with tasklist_lock read-locked.
- */
 static void dump_tasks(void)
 {
        struct task_struct *p;
@@ -93,11 +89,6 @@ static void dump_tasks(void)
        for_each_process(p) {
                task = find_lock_task_mm(p);
                if (!task) {
-                       /*
-                        * This is a kthread or all of p's threads have already
-                        * detached their mm's.  There's no need to report
-                        * them; they can't be oom killed anyway.
-                        */
                        continue;
                }
 
@@ -124,6 +115,12 @@ static int test_task_flag(struct task_struct *p, int flag)
 
 	return 0;
 }
+
+#ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
+static struct task_struct *pick_next_from_adj_tree(struct task_struct *task);
+static struct task_struct *pick_first_task(void);
+static struct task_struct *pick_last_task(void);
+#endif
 
 static DEFINE_MUTEX(scan_mutex);
 
@@ -232,14 +229,20 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 	selected_oom_score_adj = min_score_adj;
 
 	rcu_read_lock();
+#ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
+	for (tsk = pick_first_task();
+		tsk != pick_last_task();
+		tsk = pick_next_from_adj_tree(tsk)) {
+#else
 	for_each_process(tsk) {
+#endif
 		struct task_struct *p;
 		int oom_score_adj;
 
 		if (tsk->flags & PF_KTHREAD)
 			continue;
 
-		/* if task no longer has any memory ignore it */
+		
 		if (test_task_flag(tsk, TIF_MM_RELEASED))
 			continue;
 
@@ -248,7 +251,7 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 				lowmem_print(2, "skipping , waiting for process %d (%s) dead\n",
 				tsk->pid, tsk->comm);
 				rcu_read_unlock();
-				/* give the system time to free up the memory */
+				
 				if (!(lowmem_only_kswapd_sleep && !current_is_kswapd())) {
 					msleep_interruptible(lowmem_sleep_ms);
 				}
@@ -264,7 +267,11 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 		oom_score_adj = p->signal->oom_score_adj;
 		if (oom_score_adj < min_score_adj) {
 			task_unlock(p);
+#ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
+			break;
+#else
 			continue;
+#endif
 		}
 		tasksize = get_mm_rss(p->mm);
 		task_unlock(p);
@@ -272,7 +279,11 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 			continue;
 		if (selected) {
 			if (oom_score_adj < selected_oom_score_adj)
+#ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
+				break;
+#else
 				continue;
+#endif
 			if (oom_score_adj == selected_oom_score_adj &&
 			    tasksize <= selected_tasksize)
 				continue;
@@ -313,7 +324,7 @@ static int lowmem_shrink(struct shrinker *s, struct shrink_control *sc)
 			dump_tasks();
 		}
 
-		/* give the system time to free up the memory */
+		
 		if (!(lowmem_only_kswapd_sleep && !current_is_kswapd()))
 			msleep_interruptible(lowmem_sleep_ms);
 	} else
@@ -387,7 +398,7 @@ static int lowmem_adj_array_set(const char *val, const struct kernel_param *kp)
 
 	ret = param_array_ops.set(val, kp);
 
-	/* HACK: Autodetect oom_adj values in lowmem_adj array */
+	
 	lowmem_autodetect_oom_adj_values();
 
 	return ret;
@@ -416,6 +427,85 @@ static const struct kparam_array __param_arr_adj = {
 	.elemsize = sizeof(lowmem_adj[0]),
 	.elem = lowmem_adj,
 };
+#endif
+
+#ifdef CONFIG_ANDROID_LMK_ADJ_RBTREE
+DEFINE_SPINLOCK(lmk_lock);
+struct rb_root tasks_scoreadj = RB_ROOT;
+void add_2_adj_tree(struct task_struct *task)
+{
+	struct rb_node **link = &tasks_scoreadj.rb_node;
+	struct rb_node *parent = NULL;
+	struct task_struct *task_entry;
+	s64 key = task->signal->oom_score_adj;
+	/*
+ * 	 * Find the right place in the rbtree:
+ * 	 	 */
+	spin_lock(&lmk_lock);
+	while (*link) {
+		parent = *link;
+		task_entry = rb_entry(parent, struct task_struct, adj_node);
+
+		if (key < task_entry->signal->oom_score_adj)
+			link = &parent->rb_right;
+		else
+			link = &parent->rb_left;
+	}
+
+	rb_link_node(&task->adj_node, parent, link);
+	rb_insert_color(&task->adj_node, &tasks_scoreadj);
+	spin_unlock(&lmk_lock);
+}
+
+void delete_from_adj_tree(struct task_struct *task)
+{
+	spin_lock(&lmk_lock);
+	rb_erase(&task->adj_node, &tasks_scoreadj);
+	spin_unlock(&lmk_lock);
+}
+
+
+static struct task_struct *pick_next_from_adj_tree(struct task_struct *task)
+{
+	struct rb_node *next;
+
+	spin_lock(&lmk_lock);
+	next = rb_next(&task->adj_node);
+	spin_unlock(&lmk_lock);
+
+	if (!next)
+		return NULL;
+
+	 return rb_entry(next, struct task_struct, adj_node);
+}
+
+static struct task_struct *pick_first_task(void)
+{
+	struct rb_node *left;
+
+	spin_lock(&lmk_lock);
+	left = rb_first(&tasks_scoreadj);
+	spin_unlock(&lmk_lock);
+
+	if (!left)
+		return NULL;
+
+	return rb_entry(left, struct task_struct, adj_node);
+}
+
+static struct task_struct *pick_last_task(void)
+{
+	struct rb_node *right;
+
+	spin_lock(&lmk_lock);
+	right = rb_last(&tasks_scoreadj);
+	spin_unlock(&lmk_lock);
+
+	if (!right)
+		return NULL;
+
+	return rb_entry(right, struct task_struct, adj_node);
+}
 #endif
 
 module_param_named(cost, lowmem_shrinker.seeks, int, S_IRUGO | S_IWUSR);
