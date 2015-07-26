@@ -16,7 +16,6 @@
 #define _ZRAM_DRV_H_
 
 #include <linux/spinlock.h>
-
 #include <linux/zsmalloc.h>
 
 #include "zcomp.h"
@@ -103,7 +102,7 @@ struct zram {
 	struct request_queue *queue;
 	struct gendisk *disk;
 	struct zcomp *comp;
-	
+
 	/* Prevent concurrent execution of device init, reset and R/W request */
 	struct rw_semaphore init_lock;
 	/*

@@ -28,7 +28,6 @@ struct outer_cache_fns {
 	void (*clean_range)(unsigned long, unsigned long);
 	void (*flush_range)(unsigned long, unsigned long);
 	void (*flush_all)(void);
-	void (*clean_all)(void);
 	void (*inv_all)(void);
 	void (*disable)(void);
 #ifdef CONFIG_OUTER_CACHE_SYNC
@@ -38,9 +37,9 @@ struct outer_cache_fns {
 	void (*resume)(void);
 };
 
-extern struct outer_cache_fns outer_cache;
-
 #ifdef CONFIG_OUTER_CACHE
+
+extern struct outer_cache_fns outer_cache;
 
 static inline void outer_inv_range(phys_addr_t start, phys_addr_t end)
 {
@@ -62,12 +61,6 @@ static inline void outer_flush_all(void)
 {
 	if (outer_cache.flush_all)
 		outer_cache.flush_all();
-}
-
-static inline void outer_clean_all(void)
-{
-	if (outer_cache.clean_all)
-		outer_cache.clean_all();
 }
 
 static inline void outer_inv_all(void)
@@ -97,7 +90,6 @@ static inline void outer_clean_range(phys_addr_t start, phys_addr_t end)
 static inline void outer_flush_range(phys_addr_t start, phys_addr_t end)
 { }
 static inline void outer_flush_all(void) { }
-static inline void outer_clean_all(void) { }
 static inline void outer_inv_all(void) { }
 static inline void outer_disable(void) { }
 static inline void outer_resume(void) { }
