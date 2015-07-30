@@ -144,6 +144,11 @@ static int min_percpu_pagelist_fract = 8;
 static int ngroups_max = NGROUPS_MAX;
 static const int cap_last_cap = CAP_LAST_CAP;
 
+/*this is needed for proc_doulongvec_minmax of sysctl_hung_task_timeout_secs */
+#ifdef CONFIG_DETECT_HUNG_TASK
+static unsigned long hung_task_timeout_max = (LONG_MAX/HZ);
+#endif
+
 #ifdef CONFIG_INOTIFY_USER
 #include <linux/inotify.h>
 #endif
@@ -272,6 +277,13 @@ static struct ctl_table kern_table[] = {
 		.mode		= 0644,
 		.proc_handler	= proc_dointvec,
 	},
+	{
+		.procname	= "sched_wakeup_load_threshold",
+		.data		= &sysctl_sched_wakeup_load_threshold,
+		.maxlen		= sizeof(unsigned int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec,
+	},
 #ifdef CONFIG_SCHED_DEBUG
 	{
 		.procname	= "sched_min_granularity_ns",
@@ -299,6 +311,20 @@ static struct ctl_table kern_table[] = {
 		.proc_handler	= sched_proc_update_handler,
 		.extra1		= &min_wakeup_granularity_ns,
 		.extra2		= &max_wakeup_granularity_ns,
+	},
+	{
+		.procname	= "sched_yield_sleep_threshold",
+		.data		= &sysctl_sched_yield_sleep_threshold,
+		.maxlen		= sizeof(int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec,
+	},
+	{
+		.procname	= "sched_yield_sleep_duration",
+		.data		= &sysctl_sched_yield_sleep_duration,
+		.maxlen		= sizeof(unsigned int),
+		.mode		= 0644,
+		.proc_handler	= proc_dointvec,
 	},
 	{
 		.procname	= "sched_tunable_scaling",
@@ -367,7 +393,7 @@ static struct ctl_table kern_table[] = {
 		.data		= &sysctl_sched_autogroup_enabled,
 		.maxlen		= sizeof(unsigned int),
 		.mode		= 0644,
-		.proc_handler	= proc_dointvec_minmax,
+		.proc_handler	= proc_dointvec,
 		.extra1		= &zero,
 		.extra2		= &one,
 	},
@@ -906,6 +932,7 @@ static struct ctl_table kern_table[] = {
 		.maxlen		= sizeof(unsigned long),
 		.mode		= 0644,
 		.proc_handler	= proc_dohung_task_timeout_secs,
+		.extra2		= &hung_task_timeout_max,
 	},
 	{
 		.procname	= "hung_task_warnings",
@@ -1116,6 +1143,33 @@ static struct ctl_table vm_table[] = {
 		.mode		= 0644,
 		.proc_handler	= dirty_writeback_centisecs_handler,
 	},
+#ifdef CONFIG_DYNAMIC_PAGE_WRITEBACK
+	{
+		.procname	= "dynamic_dirty_writeback",
+		.data		= &dyn_dirty_writeback_enabled,
+		.maxlen		= sizeof(dyn_dirty_writeback_enabled),
+		.mode		= 0644,
+		.proc_handler	= dynamic_dirty_writeback_handler,
+		.extra1		= &zero,
+		.extra2		= &one,
+	},
+	{
+		.procname	= "dirty_writeback_active_centisecs",
+		.data		= &dirty_writeback_active_interval,
+		.maxlen		= sizeof(dirty_writeback_active_interval),
+		.mode		= 0644,
+		.proc_handler	= dirty_writeback_active_centisecs_handler,
+		.extra1		= &zero,
+	},
+	{
+		.procname	= "dirty_writeback_suspend_centisecs",
+		.data		= &dirty_writeback_suspend_interval,
+		.maxlen		= sizeof(dirty_writeback_suspend_interval),
+		.mode		= 0644,
+		.proc_handler	= dirty_writeback_suspend_centisecs_handler,
+		.extra1		= &zero,
+	},
+#endif
 	{
 		.procname	= "dirty_expire_centisecs",
 		.data		= &dirty_expire_interval,

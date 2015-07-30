@@ -18,11 +18,6 @@
  */
 #line 5
 
-/**
- * @file
- *
- * @brief Time stamp and event counters.
- */
 
 #ifndef _TSC_H_
 #define _TSC_H_
@@ -46,4 +41,4 @@
 #define TSC_READ(_reg)  ARM_MRC_CP15(CYCLE_COUNT, (_reg))
 #define TSC_WRITE(_reg) ARM_MCR_CP15(CYCLE_COUNT, (_reg))
 
-#endif /* ifndef _TSC_H_ */
+#endif 
